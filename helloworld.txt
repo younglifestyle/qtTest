@@ -1,1 +1,1 @@
-Welcome to Android & Git, hi!
+Welcome to Android & Git, hi !
