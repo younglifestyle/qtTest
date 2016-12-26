@@ -1,0 +1,24 @@
+<RCC>
+    <qresource prefix="/images">
+        <file>resources/button-1.png</file>
+        <file>resources/button-2.png</file>
+        <file>resources/button-3.png</file>
+        <file>resources/button-4.png</file>
+        <file>resources/button-5.png</file>
+        <file>resources/button-6.png</file>
+        <file>resources/title.ico</file>
+        <file>resources/keyboard.png</file>
+        <file>resources/Mouse.png</file>
+        <file>resources/RUN-icon.png</file>
+        <file>resources/1.jpg</file>
+        <file>resources/2.jpg</file>
+        <file>resources/3.jpg</file>
+        <file>resources/side1.png</file>
+        <file>resources/side2.png</file>
+        <file>resources/side3.png</file>
+        <file>resources/side4.png</file>
+        <file>resources/side5.png</file>
+        <file>resources/side6.png</file>
+        <file>resources/1downarrow.ico</file>
+    </qresource>
+</RCC>
