@@ -42,8 +42,12 @@ public:
 signals:
     void changeTestFlg(int);
 
+public slots:
+    void onTimeout();
+
 private slots:
     void changeButtonStatus();
+
     void toolButton_Ram_clicked();
     void toolButton_Disk_clicked();
     void toolButton_Pic_clicked();
@@ -59,6 +63,14 @@ private slots:
     void uart_test();
 
     void on_comboBox_currentIndexChanged(const QString &arg1);
+
+protected:
+    //鼠标拖动事件
+    void mouseMoveEvent(QMouseEvent *e);
+    //鼠标按下事件
+    void mousePressEvent(QMouseEvent *e);
+    //鼠标松开事件
+    void mouseReleaseEvent(QMouseEvent *);
 
 private:
     Ui::Widget *ui;

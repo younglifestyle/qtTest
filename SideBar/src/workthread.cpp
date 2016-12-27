@@ -1,5 +1,4 @@
 #include "workthread.h"
-#include "widget.h"
 #include <QDebug>
 
 myThread::myThread(QObject *parent) :
@@ -7,6 +6,7 @@ myThread::myThread(QObject *parent) :
 {
     stopped = false;
     flg = 16;
+
 }
 
 void myThread::run()

@@ -3,7 +3,6 @@
 
 #include <QThread>
 #include "common.h"
-#include "window.h"
 
 class myThread : public QThread
 {

@@ -8,6 +8,8 @@ Widget::Widget(QWidget *parent) :
     ui->setupUi(this);
     initButtons();
 
+    QThread *thread1 = new QThread;
+
     thread = new myThread(this);
     ram = new int[645];
     for(int i = 0; i < 645; i++)
@@ -61,6 +63,14 @@ Widget::Widget(QWidget *parent) :
     connect(thread, SIGNAL(uartSignal()), this, SLOT(uart_test()),      Qt::BlockingQueuedConnection);
 
     this->thread->start();
+
+    QTimer *timer = new QTimer(0);
+//    timer->setInterval(1000);
+    connect(timer, SIGNAL(timeout()), this, SLOT(onTimeout()), Qt::DirectConnection);
+    //connect(thread, SIGNAL(started()), timer,  SLOT(start()));
+    timer->start(1000);
+    timer->moveToThread(thread1);
+    thread1->start();
 }
 
 Widget::~Widget()
@@ -105,6 +115,54 @@ void Widget::changeButtonStatus()
     QToolButton *source = qobject_cast<QToolButton *>(sender());
     source->setProperty("current", "true");
     source->setStyleSheet("");
+}
+
+void Widget::mousePressEvent(QMouseEvent *e)
+{
+    if( e->button() == Qt::LeftButton )
+    {
+        ui->leftButton->setProperty("current", "true");
+        ui->leftButton->setStyleSheet("");
+    }
+    else if( e->button() == Qt::MidButton )
+    {
+        ui->midButton->setProperty("current", "true");
+        ui->midButton->setStyleSheet("");
+    }
+    else if( e->button() == Qt::RightButton )
+    {
+        ui->rightButton->setProperty("current", "true");
+        ui->rightButton->setStyleSheet("");
+    }
+}
+
+void Widget::mouseReleaseEvent(QMouseEvent *e)
+{
+    if( e->button() == Qt::LeftButton )
+    {
+        ui->leftButton->setProperty("current", "false");
+        ui->leftButton->setStyleSheet("");
+    }
+    else if( e->button() == Qt::MidButton )
+    {
+        ui->midButton->setProperty("current", "false");
+        ui->midButton->setStyleSheet("");
+    }
+    else if( e->button() == Qt::RightButton )
+    {
+        ui->rightButton->setProperty("current", "false");
+        ui->rightButton->setStyleSheet("");
+    }
+}
+
+void Widget::mouseMoveEvent(QMouseEvent *e)
+{
+    ui->mousePos->setText(QString("move ：(%1, %2)").arg(e->globalX()).arg(e->globalY()));
+}
+
+void Widget::onTimeout()
+{
+    qDebug() << "1++";
 }
 
 void Widget::toolButton_Ram_clicked()
