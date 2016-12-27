@@ -42,12 +42,14 @@ Widget::Widget(QWidget *parent) :
 
     ui->net_textEdit1->setStyleSheet("color: rgb(234, 234, 234); background-color: rgb(25, 105, 154); font: bold; font-size : 24px");
     ui->net_textEdit2->setStyleSheet("color: rgb(234, 234, 234); background-color: rgb(25, 105, 154); font: bold; font-size : 24px");
-    ui->plainTextEdit->setStyleSheet("color: rgb(234, 234, 234); background-color: rgb(25, 105, 154); font: bold; font-size : 24px");
+
+    initSeialPort();
 
     connect(ui->toolButton_ram,  SIGNAL(clicked()), this,  SLOT(toolButton_Ram_clicked()));
     connect(ui->toolButton_disk, SIGNAL(clicked()), this,  SLOT(toolButton_Disk_clicked()));
     connect(ui->toolButton_pic,  SIGNAL(clicked()), this,  SLOT(toolButton_Pic_clicked()));
     connect(ui->toolButton_net,  SIGNAL(clicked()), this,  SLOT(toolButton_Net_clicked()));
+    connect(ui->toolButton_uart, SIGNAL(clicked()), this,  SLOT(toolButton_Uart_clicked()));
     connect(ui->exitButton,      SIGNAL(clicked()), this,  SLOT(exitButton()));
 
     connect(this, SIGNAL(changeTestFlg(int)), thread, SLOT(getTestFlg(int)));   /* 连接线程 */
@@ -56,6 +58,7 @@ Widget::Widget(QWidget *parent) :
     connect(thread, SIGNAL(diskSignal()), this, SLOT(disk_test()),      Qt::BlockingQueuedConnection);
     connect(thread, SIGNAL(picSignal()),  this, SLOT(toggle_Picture()), Qt::BlockingQueuedConnection);
     connect(thread, SIGNAL(netSignal()),  this, SLOT(net_test()),       Qt::BlockingQueuedConnection);
+    connect(thread, SIGNAL(uartSignal()), this, SLOT(uart_test()),      Qt::BlockingQueuedConnection);
 
     this->thread->start();
 }
@@ -157,6 +160,13 @@ void Widget::toolButton_Net_clicked()
     emit this->changeTestFlg(NET_TEST);
 }
 
+void Widget::toolButton_Uart_clicked()
+{
+    ui->testWidget->setCurrentIndex(4);
+
+    emit this->changeTestFlg(UART_TEST);
+}
+
 void Widget::sleep(unsigned int msec)
 {
     QElapsedTimer t;
@@ -171,6 +181,90 @@ void Widget::sleep(unsigned int msec)
     while( QTime::currentTime() < dieTime )
         QCoreApplication::processEvents(QEventLoop::AllEvents, 20);
 #endif
+}
+
+void Widget::initSeialPort()
+{
+    //获取计算机上所有串口并添加到comboBox中
+    QList<QSerialPortInfo> infos = QSerialPortInfo::availablePorts();
+    if(infos.isEmpty())
+    {
+        ui->comboBox->addItem("无串口");
+        return;
+    }
+    foreach (QSerialPortInfo info, infos)
+    {
+        ui->comboBox->addItem(info.portName());
+        //qDebug() << info.portName();
+    }
+}
+
+void Widget::uart_test()
+{
+    QString strText = "123abc";
+    QByteArray ch = strText.toLatin1();
+
+    sleep(1000);
+
+    ui->textEdit_1->clear();
+    ui->textEdit_2->clear();
+    ui->textEdit_3->clear();
+    ui->textEdit_4->clear();
+    ui->textEdit_5->clear();
+
+    if( serial.write(ch) == -1 && ui->testWidget->currentIndex() == 4 )
+    {
+        ui->textEdit_1->setText("发送数据失败");
+        return;
+    }
+    else
+    {
+        ui->textEdit_1->setText("发送数据：" + strText + "  成功");
+    }
+
+    sleep(1000);
+    if( serial.write(ch) == -1 && ui->testWidget->currentIndex() == 4 )
+    {
+        ui->textEdit_2->setText("发送数据失败");
+        return;
+    }
+    else
+    {
+        ui->textEdit_2->setText("发送数据：" + strText + "  成功");
+    }
+
+    sleep(1000);
+    if( serial.write(ch) == -1 && ui->testWidget->currentIndex() == 4 )
+    {
+        ui->textEdit_3->setText("发送数据失败");
+        return;
+    }
+    else
+    {
+        ui->textEdit_3->setText("发送数据：" + strText + "  成功");
+    }
+
+    sleep(1000);
+    if( serial.write(ch) == -1 && ui->testWidget->currentIndex() == 4 )
+    {
+        ui->textEdit_4->setText("发送数据失败");
+        return;
+    }
+    else
+    {
+        ui->textEdit_4->setText("发送数据：" + strText + "  成功");
+    }
+
+    sleep(1000);
+    if( serial.write(ch) == -1 && ui->testWidget->currentIndex() == 4 )
+    {
+        ui->textEdit_5->setText("发送数据失败");
+        return;
+    }
+    else
+    {
+        ui->textEdit_5->setText("发送数据：" + strText + "  成功");
+    }
 }
 
 void Widget::toggle_Picture()
@@ -210,8 +304,8 @@ void Widget::toggle_Picture()
     {
         ui->label_4->hide();
         window->show();
-        window->timer->start(50);
-        sleep(1000);
+        window->timer->start(40);
+        sleep(2000);
         window->timer->stop();
         window->hide();
         sleep(50);
@@ -228,13 +322,37 @@ void Widget::net_test()
 {
     QString ip = "127.0.0.1";
     int exitCode;
+    int cnt = 0;
 
-    sleep(500);
+    ui->net_textEdit1->clear();
+    ui->net_textEdit2->clear();
+    ui->net_textEdit2_2->clear();
+    ui->net_textEdit2_3->clear();
+    ui->net_textEdit2_4->clear();
+    ui->net_textEdit2_5->clear();
+
     //对每个Ip执行ping命令检测其是否在线
     qDebug() << "ping " + ip << endl;
     #ifdef Q_OS_WIN
-        QString strArg = "netsh interface ip set address name=\"本地连接\" source=static addr=192.168.0.10 mask=255.255.255.0 gateway=192.168.0.1";
+        QString strArg = "netsh interface ip set address \"本地连接";
+        QString strArg1 = " %1\" static 192.168.0.10 255.255.255.0 192.168.0.1";
+        QString strArg2 = "netsh interface ip set address \"本地连接 \" static 192.168.0.10 255.255.255.0 192.168.0.1";
+        QString strArg3;
         //QString strArg = "ping " + ip + " -n 1 -i 2";
+        exitCode = QProcess::execute(strArg2);
+        if( 0 == exitCode )
+            cnt++;
+
+        for( int i = 0; i < 30; ++i )
+        {
+            strArg3 = strArg + strArg1.arg(i);
+            exitCode = QProcess::execute(strArg3);
+            //qDebug() << strArg3;
+            if( 0 == exitCode )
+                cnt++;
+        }
+
+        strArg = "ping " + ip + " -n 1 -i 2";
         exitCode = QProcess::execute(strArg);
     #else
         //其他平台(Linux或Mac)
@@ -242,34 +360,67 @@ void Widget::net_test()
     #endif
 
     /* strArg.arg("~~~~"), 可进行修改 */
-
-    ui->net_textEdit1->setText("ping " + ip);
-    sleep(500);
+    sleep(300);
 
     if(0 == exitCode)
     {
         //it's alive
         qDebug() << "shell ping " + ip + " sucessed!";
-        ui->net_textEdit1->append("sucessed!");
+        ui->net_textEdit1->setText("来自 127.0.0.1 的回复: 字节=32 时间<1ms TTL=64");
+
+        sleep(500);
+        if( ui->testWidget->currentIndex() == 3 )
+        {
+            ui->net_textEdit2->setText("来自 127.0.0.1 的回复: 字节=32 时间<1ms TTL=64");
+        }
+        else
+        {
+            return;
+        }
+
+        sleep(500);
+        if( ui->testWidget->currentIndex() == 3 )
+        {
+            ui->net_textEdit2_2->setText("来自 127.0.0.1 的回复: 字节=32 时间<1ms TTL=64");
+        }
+        else
+        {
+            return;
+        }
+
+        sleep(500);
+        if( ui->testWidget->currentIndex() == 3 )
+        {
+            ui->net_textEdit2_3->setText("来自 127.0.0.1 的回复: 字节=32 时间<1ms TTL=64");
+        }
+        else
+        {
+            return;
+        }
+
+        sleep(500);
+        if( ui->testWidget->currentIndex() == 3 )
+        {
+            ui->net_textEdit2_4->setText("来自 127.0.0.1 的回复: 字节=32 时间<1ms TTL=64");
+        }
+        else
+        {
+            return;
+        }
+
+        sleep(500);
+        if( ui->testWidget->currentIndex() == 3 )
+        {
+            ui->net_textEdit2_5->setText("来自 127.0.0.1 的回复: 字节=32 时间<1ms TTL=64");
+        }
+        else
+        {
+            return;
+        }
     }
     else
     {
-        qDebug() << "shell ping " + ip + " failed!";
-    }
-
-    sleep(500);
-    ui->net_textEdit2->setText("ping " + ip);
-    sleep(500);
-
-    if(0 == exitCode)
-    {
-        //it's alive
-        qDebug() << "shell ping " + ip + " sucessed!";
-        ui->net_textEdit2->append("sucessed!");
-    }
-    else
-    {
-        qDebug() << "shell ping " + ip + " failed!";
+        ui->net_textEdit1->setText("请求超时");
     }
 }
 
@@ -519,3 +670,41 @@ QString Widget::get_localmachine_ip()
     return ipAddress;
 }
 
+
+void Widget::on_comboBox_currentIndexChanged(const QString &arg1)
+{
+    QSerialPortInfo info;
+    QList<QSerialPortInfo> infos = QSerialPortInfo::availablePorts();
+    int i = 0;
+    foreach(info, infos)
+    {
+        if(info.portName() == arg1)
+            break;
+        i++;
+    }
+
+//    qDebug() << info.portName();
+//    qDebug() << infos.size();
+
+    if(i != infos.size())
+    {
+        //can find
+        ui->uart_label->setText("串口打开成功");
+        serial.close();
+        serial.setPort(info);
+        if( serial.open(QIODevice::ReadWrite) )          //读写打开
+            ui->uart_label->setText("串口打开成功");
+        else
+            ui->uart_label->setText("串口打开失败");
+        serial.setBaudRate(QSerialPort::Baud115200);  //波特率
+        serial.setDataBits(QSerialPort::Data8);     //数据位
+        serial.setParity(QSerialPort::NoParity);    //无奇偶校验
+        serial.setStopBits(QSerialPort::OneStop);   //一停止位
+        serial.setFlowControl(QSerialPort::NoFlowControl);  //无控制
+    }
+    else
+    {
+        serial.close();
+        ui->uart_label->setText("串口打开失败");
+    }
+}

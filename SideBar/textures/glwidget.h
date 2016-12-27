@@ -48,57 +48,48 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
+#ifndef GLWIDGET_H
+#define GLWIDGET_H
 
-#include "glwidget.h"
-#include "window.h"
+#include <QOpenGLWidget>
+#include <QOpenGLFunctions>
+#include <QOpenGLBuffer>
 
-Window::Window(QWidget *parent) :
-    QWidget(parent)
+QT_FORWARD_DECLARE_CLASS(QOpenGLShaderProgram);
+QT_FORWARD_DECLARE_CLASS(QOpenGLTexture)
+
+class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
-    QSurfaceFormat format;
-    format.setDepthBufferSize(24);
-    QSurfaceFormat::setDefaultFormat(format);
+    Q_OBJECT
 
-    QGridLayout *mainLayout = new QGridLayout;
-//    parent->layout()   /* 返回父界面的layout */
+public:
+    explicit GLWidget(QWidget *parent = 0);
+    ~GLWidget();
+
+    QSize minimumSizeHint() const Q_DECL_OVERRIDE;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
+    void rotateBy(int xAngle, int yAngle, int zAngle);
+    void setClearColor(const QColor &color);
+
+signals:
+    void clicked();
+
+protected:
+    void initializeGL() Q_DECL_OVERRIDE;
+    void paintGL() Q_DECL_OVERRIDE;
+    void resizeGL(int width, int height) Q_DECL_OVERRIDE;
+
+private:
+    void makeObject();
+
     QColor clearColor;
-    clearColor.setHsv(203, 213, 131);
+    QPoint lastPos;
+    int xRot;
+    int yRot;
+    int zRot;
+    QOpenGLTexture *textures[6];
+    QOpenGLShaderProgram *program;
+    QOpenGLBuffer vbo;
+};
 
-    glWidgets = new GLWidget;
-    glWidgets->setClearColor(clearColor);
-    glWidgets->rotateBy(+42 * 16, +42 * 16, -21 * 16);
-
-    mainLayout->setAlignment(parent, Qt::AlignCenter);
-
-    mainLayout->addWidget(glWidgets);
-
-    setLayout(mainLayout);
-
-    currentGlWidget = glWidgets;
-
-    timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, this, &Window::rotateOneStep);
-//    timer->start(30);
-
-    setWindowTitle(tr("3D测试"));
-
-    int wd = parent->width();
-    int ht = parent->height();
-    move( (wd - width()) * 0.85, (ht-height()) * 0.3 );
-    resize(600, 500);
-}
-
-Window::~Window()
-{
-    delete glWidgets;
-    delete timer;
-}
-
-void Window::rotateOneStep()
-{
-//    qDebug() <<" is rotateOneStep ";
-
-    if (currentGlWidget)
-        currentGlWidget->rotateBy(+2 * 16, +2 * 16, -1 * 16);
-}
+#endif

@@ -48,57 +48,28 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
+#ifndef WINDOW_H
+#define WINDOW_H
 
-#include "glwidget.h"
-#include "window.h"
+#include <QWidget>
 
-Window::Window(QWidget *parent) :
-    QWidget(parent)
+class GLWidget;
+
+class Window : public QWidget
 {
-    QSurfaceFormat format;
-    format.setDepthBufferSize(24);
-    QSurfaceFormat::setDefaultFormat(format);
+    Q_OBJECT
 
-    QGridLayout *mainLayout = new QGridLayout;
-//    parent->layout()   /* 返回父界面的layout */
-    QColor clearColor;
-    clearColor.setHsv(203, 213, 131);
+public:
+    Window();
 
-    glWidgets = new GLWidget;
-    glWidgets->setClearColor(clearColor);
-    glWidgets->rotateBy(+42 * 16, +42 * 16, -21 * 16);
+private slots:
+    void rotateOneStep();
 
-    mainLayout->setAlignment(parent, Qt::AlignCenter);
+private:
+//    enum { NumRows = 2, NumColumns = 3 };
 
-    mainLayout->addWidget(glWidgets);
+    GLWidget *glWidgets;
+    GLWidget *currentGlWidget;
+};
 
-    setLayout(mainLayout);
-
-    currentGlWidget = glWidgets;
-
-    timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, this, &Window::rotateOneStep);
-//    timer->start(30);
-
-    setWindowTitle(tr("3D测试"));
-
-    int wd = parent->width();
-    int ht = parent->height();
-    move( (wd - width()) * 0.85, (ht-height()) * 0.3 );
-    resize(600, 500);
-}
-
-Window::~Window()
-{
-    delete glWidgets;
-    delete timer;
-}
-
-void Window::rotateOneStep()
-{
-//    qDebug() <<" is rotateOneStep ";
-
-    if (currentGlWidget)
-        currentGlWidget->rotateBy(+2 * 16, +2 * 16, -1 * 16);
-}
+#endif

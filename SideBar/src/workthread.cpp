@@ -17,23 +17,28 @@ void myThread::run()
         switch (flg)
         {
             case RAM_TEST:
-                qDebug() <<" is ram_test ";
+//                qDebug() <<" is ram_test ";
                 emit this->ramSignal();
                 break;
 
             case DISK_TEST:
-                qDebug() <<" is DISK_TEST ";
+//                qDebug() <<" is DISK_TEST ";
                 emit this->diskSignal();
                 break;
 
             case PIC_TEST:
-                qDebug() <<" is PIC_TEST ";
+//                qDebug() <<" is PIC_TEST ";
                 emit this->picSignal();
                 break;
 
             case NET_TEST:
-                qDebug() <<" is NET_TEST ";
+//                qDebug() <<" is NET_TEST ";
                 emit this->netSignal();
+                break;
+
+            case UART_TEST:
+//                qDebug() <<" is NET_TEST ";
+                emit this->uartSignal();
                 break;
 
             default:
@@ -51,7 +56,7 @@ void myThread::run()
 void myThread::getTestFlg(int flg)
 {
     this->flg = flg;
-    qDebug() <<" is getTestFlg " << this->flg;
+//    qDebug() <<" is getTestFlg " << this->flg;
 }
 
 /* 使得run不执行循环操作 */

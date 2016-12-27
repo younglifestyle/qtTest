@@ -53,52 +53,31 @@
 #include "glwidget.h"
 #include "window.h"
 
-Window::Window(QWidget *parent) :
-    QWidget(parent)
+Window::Window()
 {
-    QSurfaceFormat format;
-    format.setDepthBufferSize(24);
-    QSurfaceFormat::setDefaultFormat(format);
-
     QGridLayout *mainLayout = new QGridLayout;
-//    parent->layout()   /* 返回父界面的layout */
+
     QColor clearColor;
-    clearColor.setHsv(203, 213, 131);
+    clearColor.setHsv(255, 255, 63);
 
     glWidgets = new GLWidget;
     glWidgets->setClearColor(clearColor);
     glWidgets->rotateBy(+42 * 16, +42 * 16, -21 * 16);
-
-    mainLayout->setAlignment(parent, Qt::AlignCenter);
-
     mainLayout->addWidget(glWidgets);
 
     setLayout(mainLayout);
 
     currentGlWidget = glWidgets;
 
-    timer = new QTimer(this);
+    QTimer *timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &Window::rotateOneStep);
-//    timer->start(30);
+    timer->start(20);
 
-    setWindowTitle(tr("3D测试"));
-
-    int wd = parent->width();
-    int ht = parent->height();
-    move( (wd - width()) * 0.85, (ht-height()) * 0.3 );
-    resize(600, 500);
-}
-
-Window::~Window()
-{
-    delete glWidgets;
-    delete timer;
+    setWindowTitle(tr("Textures"));
 }
 
 void Window::rotateOneStep()
 {
-//    qDebug() <<" is rotateOneStep ";
-
     if (currentGlWidget)
         currentGlWidget->rotateBy(+2 * 16, +2 * 16, -1 * 16);
 }

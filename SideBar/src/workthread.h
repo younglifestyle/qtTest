@@ -18,6 +18,7 @@ signals:
     void diskSignal();
     void picSignal();
     void netSignal();
+    void uartSignal();
 
 private slots:
     void getTestFlg(int flg);

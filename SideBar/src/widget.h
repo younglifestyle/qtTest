@@ -15,6 +15,8 @@
 #include <QProcess>
 #include <QNetworkInterface>
 #include <QHostAddress>
+#include <QtSerialPort/QSerialPort>
+#include <QSerialPortInfo>
 
 #include "workthread.h"
 #include "window.h"
@@ -34,6 +36,8 @@ public:
     ~Widget();
 
     void sleep(unsigned int msec);
+    void initSeialPort();
+    QSerialPort serial;//串口实例
 
 signals:
     void changeTestFlg(int);
@@ -44,6 +48,7 @@ private slots:
     void toolButton_Disk_clicked();
     void toolButton_Pic_clicked();
     void toolButton_Net_clicked();
+    void toolButton_Uart_clicked();
 
     void exitButton();
 
@@ -51,7 +56,9 @@ private slots:
     void ram_test();
     void disk_test();
     void net_test();
-//    void uart_test();
+    void uart_test();
+
+    void on_comboBox_currentIndexChanged(const QString &arg1);
 
 private:
     Ui::Widget *ui;
