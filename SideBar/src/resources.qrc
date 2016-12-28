@@ -6,7 +6,6 @@
         <file>resources/button-4.png</file>
         <file>resources/button-5.png</file>
         <file>resources/button-6.png</file>
-        <file>resources/title.ico</file>
         <file>resources/keyboard.png</file>
         <file>resources/Mouse.png</file>
         <file>resources/RUN-icon.png</file>
@@ -20,5 +19,6 @@
         <file>resources/side5.png</file>
         <file>resources/side6.png</file>
         <file>resources/1downarrow.ico</file>
+        <file>resources/title.ico</file>
     </qresource>
 </RCC>

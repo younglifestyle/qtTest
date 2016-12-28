@@ -45,6 +45,16 @@ Widget::Widget(QWidget *parent) :
     ui->net_textEdit1->setStyleSheet("color: rgb(234, 234, 234); background-color: rgb(25, 105, 154); font: bold; font-size : 24px");
     ui->net_textEdit2->setStyleSheet("color: rgb(234, 234, 234); background-color: rgb(25, 105, 154); font: bold; font-size : 24px");
 
+    /* 设置按钮不可用 */
+    ui->leftButton->setEnabled(false);
+    ui->rightButton->setEnabled(false);
+    ui->midButton->setEnabled(false);
+    setMouseTracking(true);
+
+    /* 不让界面开始时跳那么一下 */
+    ui->timeCnt->setText("00:00:00");
+
+    /* 初始化串口 */
     initSeialPort();
 
     connect(ui->toolButton_ram,  SIGNAL(clicked()), this,  SLOT(toolButton_Ram_clicked()));
@@ -52,9 +62,11 @@ Widget::Widget(QWidget *parent) :
     connect(ui->toolButton_pic,  SIGNAL(clicked()), this,  SLOT(toolButton_Pic_clicked()));
     connect(ui->toolButton_net,  SIGNAL(clicked()), this,  SLOT(toolButton_Net_clicked()));
     connect(ui->toolButton_uart, SIGNAL(clicked()), this,  SLOT(toolButton_Uart_clicked()));
+    connect(ui->toolButton_mouse,SIGNAL(clicked()), this,  SLOT(toolButton_Mouse_clicked()));
     connect(ui->exitButton,      SIGNAL(clicked()), this,  SLOT(exitButton()));
 
     connect(this, SIGNAL(changeTestFlg(int)), thread, SLOT(getTestFlg(int)));   /* 连接线程 */
+    connect(this, SIGNAL(changeTimeDate(QString)), this, SLOT(changeLabelTime(QString)));
 
     connect(thread, SIGNAL(ramSignal()),  this, SLOT(ram_test()),       Qt::BlockingQueuedConnection);
     connect(thread, SIGNAL(diskSignal()), this, SLOT(disk_test()),      Qt::BlockingQueuedConnection);
@@ -64,7 +76,10 @@ Widget::Widget(QWidget *parent) :
 
     this->thread->start();
 
-    QTimer *timer = new QTimer(0);
+    time = new QTime(0, 0, 0, 0);
+//    time->start();                            /* 功能仅为：Sets this time to the current time */
+
+    timer = new QTimer(0);
 //    timer->setInterval(1000);
     connect(timer, SIGNAL(timeout()), this, SLOT(onTimeout()), Qt::DirectConnection);
     //connect(thread, SIGNAL(started()), timer,  SLOT(start()));
@@ -77,6 +92,8 @@ Widget::~Widget()
 {
     delete [] ram;
     delete [] image;
+    delete timer;
+    delete time;
     delete ui;
 }
 
@@ -160,9 +177,30 @@ void Widget::mouseMoveEvent(QMouseEvent *e)
     ui->mousePos->setText(QString("move ：(%1, %2)").arg(e->globalX()).arg(e->globalY()));
 }
 
+void Widget::changeLabelTime(const QString &Tim)
+{
+    ui->timeCnt->setText(Tim);
+}
+
 void Widget::onTimeout()
 {
-    qDebug() << "1++";
+    *time = time->addSecs(1);
+
+    emit changeTimeDate(time->toString("hh:mm:ss"));
+
+//    qDebug() << "123" << time->toString("hh:mm:ss");
+
+//    time->restart();
+//    dateTime = QDateTime::fromTime_t(0, );
+//    qDebug() << dateTime.toString("hh:mm:ss");
+//    int totalSeconds = time->elapsed()/1000;
+//    int seconds = totalSeconds % 60;
+//    int minutes = (totalSeconds / 60) % 60;
+//    int hours = totalSeconds / 3600;
+
+//    qDebug() << "123" << time->elapsed()/1000.0 << totalSeconds << minutes << hours << seconds;
+//                toString("hh:mm:ss");
+    //ui->timeCnt->setText();
 }
 
 void Widget::toolButton_Ram_clicked()
@@ -223,6 +261,11 @@ void Widget::toolButton_Uart_clicked()
     ui->testWidget->setCurrentIndex(4);
 
     emit this->changeTestFlg(UART_TEST);
+}
+
+void Widget::toolButton_Mouse_clicked()
+{
+    ui->testWidget->setCurrentIndex(7);
 }
 
 void Widget::sleep(unsigned int msec)

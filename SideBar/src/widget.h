@@ -17,6 +17,7 @@
 #include <QHostAddress>
 #include <QtSerialPort/QSerialPort>
 #include <QSerialPortInfo>
+#include <QDateTime>
 
 #include "workthread.h"
 #include "window.h"
@@ -38,9 +39,13 @@ public:
     void sleep(unsigned int msec);
     void initSeialPort();
     QSerialPort serial;//串口实例
+    QTimer *timer;
+    QTime *time;
+    QDateTime dateTime;
 
 signals:
     void changeTestFlg(int);
+    void changeTimeDate(const QString &Tim);
 
 public slots:
     void onTimeout();
@@ -53,6 +58,9 @@ private slots:
     void toolButton_Pic_clicked();
     void toolButton_Net_clicked();
     void toolButton_Uart_clicked();
+    void toolButton_Mouse_clicked();
+
+    void changeLabelTime(const QString &Tim);
 
     void exitButton();
 
