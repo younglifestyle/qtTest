@@ -720,15 +720,14 @@ void Widget::ram_test()
                     if (strText.at(i) == ram[x])
                     {
                         x++;
-                        //qDebug()<<"len2";
+//                        qDebug()<<strText.at(i);
                         helper.setCharFormat(fmt);
                         sleep(1);
                     }
-//                    else
-//                    {
-//                        fmt.setForeground(QBrush(QColor(0, 0, 0)));
-//                        helper.setCharFormat(fmt);
-//                    }
+                    else
+                    {
+
+                    }
                 }
             }
         }

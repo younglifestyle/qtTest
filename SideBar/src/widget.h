@@ -84,6 +84,7 @@ private:
     Ui::Widget *ui;
     QList<QToolButton *> buttons;
 
+    int falut_Cnt;
     QImage *image;
     myThread *thread;
     int *ram;
