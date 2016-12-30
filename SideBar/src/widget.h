@@ -46,6 +46,7 @@ public:
 signals:
     void changeTestFlg(int);
     void changeTimeDate(const QString &Tim);
+    void changeFalutDate(const QString &date);
 
 public slots:
     void onTimeout();
@@ -61,6 +62,7 @@ private slots:
     void toolButton_Mouse_clicked();
 
     void changeLabelTime(const QString &Tim);
+    void changeLabelFalut(const QString &date);
 
     void exitButton();
 

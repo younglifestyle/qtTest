@@ -10,6 +10,7 @@ Widget::Widget(QWidget *parent) :
 
     QThread *thread1 = new QThread;
 
+    falut_Cnt = 0;
     thread = new myThread(this);
     ram = new int[645];
     for(int i = 0; i < 645; i++)
@@ -67,6 +68,7 @@ Widget::Widget(QWidget *parent) :
 
     connect(this, SIGNAL(changeTestFlg(int)), thread, SLOT(getTestFlg(int)));   /* 连接线程 */
     connect(this, SIGNAL(changeTimeDate(QString)), this, SLOT(changeLabelTime(QString)));
+    connect(this, SIGNAL(changeFalutDate(QString)), this, SLOT(changeLabelFalut(QString)));
 
     connect(thread, SIGNAL(ramSignal()),  this, SLOT(ram_test()),       Qt::BlockingQueuedConnection);
     connect(thread, SIGNAL(diskSignal()), this, SLOT(disk_test()),      Qt::BlockingQueuedConnection);
@@ -182,11 +184,24 @@ void Widget::changeLabelTime(const QString &Tim)
     ui->timeCnt->setText(Tim);
 }
 
+void Widget::changeLabelFalut(const QString &date)
+{
+    ui->errorCnt->setText(date);
+}
+
 void Widget::onTimeout()
 {
+    static int oldCnt = 0;
+
     *time = time->addSecs(1);
 
     emit changeTimeDate(time->toString("hh:mm:ss"));
+
+    if ( falut_Cnt != oldCnt )
+    {
+        oldCnt = falut_Cnt;
+        emit changeFalutDate(QString(falut_Cnt));
+    }
 
 //    qDebug() << "123" << time->toString("hh:mm:ss");
 
@@ -315,6 +330,7 @@ void Widget::uart_test()
 
     if( serial.write(ch) == -1 && ui->testWidget->currentIndex() == 4 )
     {
+        falut_Cnt += 1;
         ui->textEdit_1->setText("发送数据失败");
         return;
     }
@@ -326,6 +342,7 @@ void Widget::uart_test()
     sleep(1000);
     if( serial.write(ch) == -1 && ui->testWidget->currentIndex() == 4 )
     {
+        falut_Cnt += 1;
         ui->textEdit_2->setText("发送数据失败");
         return;
     }
@@ -337,6 +354,7 @@ void Widget::uart_test()
     sleep(1000);
     if( serial.write(ch) == -1 && ui->testWidget->currentIndex() == 4 )
     {
+        falut_Cnt += 1;
         ui->textEdit_3->setText("发送数据失败");
         return;
     }
@@ -348,6 +366,7 @@ void Widget::uart_test()
     sleep(1000);
     if( serial.write(ch) == -1 && ui->testWidget->currentIndex() == 4 )
     {
+        falut_Cnt += 1;
         ui->textEdit_4->setText("发送数据失败");
         return;
     }
@@ -359,6 +378,7 @@ void Widget::uart_test()
     sleep(1000);
     if( serial.write(ch) == -1 && ui->testWidget->currentIndex() == 4 )
     {
+        falut_Cnt += 1;
         ui->textEdit_5->setText("发送数据失败");
         return;
     }
@@ -546,6 +566,12 @@ void Widget::disk_test()
         file.close();
     }
 
+    /* 创建后若还不存在即可报错 */
+    if ( !file.exists() )
+    {
+        falut_Cnt += 1;
+    }
+
     if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
         qDebug()<< "Open failed.";
@@ -561,8 +587,11 @@ void Widget::disk_test()
         length[i] = file.write(content.toLatin1(), content.length());
 //        if(length[i] == -1)
 //            qDebug()<<"写入文件失败";
-//        else
-//            qDebug()<<"写入文件成功";
+    }
+
+    if( length[0] == -1 || length[1] == -1 || length[2] == -1 || length[3] == -1 || length[4] == -1 )
+    {
+        falut_Cnt += 1;
     }
 
     while(1)

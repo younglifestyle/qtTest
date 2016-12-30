@@ -28,12 +28,13 @@ HEADERS  += \
     workthread.h \
     common.h \
     glwidget.h \
-    window.h
-
-LIBS += -lIphlpapi
+    window.h \
+    hidapi.h
 
 FORMS    += \
     widget.ui
+
+LIBS += $$quote(F:\GitWork\SideBar\src\hidapi.lib)
 
 RESOURCES += \
     resources.qrc
