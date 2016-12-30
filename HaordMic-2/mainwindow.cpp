@@ -87,7 +87,6 @@ void MainWindow::sendUsbDateSlot()
     // Print out the returned buffer.
     qDebug() << "Data read:";
 
-
     // Print out the returned buffer.
     for( i = 0; i < 8; i++ )
     {
@@ -98,7 +97,6 @@ void MainWindow::sendUsbDateSlot()
         ui->k5LineEdit->setText(QString::number(buf1[5],16));
         ui->k6LineEdit->setText(QString::number(buf1[6],16));
         ui->k7LineEdit->setText(QString::number(buf1[7],16));
-
      }
 
     for( i = 0; i < 8; i++ )
@@ -112,7 +110,6 @@ void MainWindow::sendUsbDateSlot()
         ui->k13LineEdit->setText(QString::number(buf2[5],16));
         ui->k14LineEdit->setText(QString::number(buf2[6],16));
         ui->k15LineEdit->setText(QString::number(buf2[7],16));
-
     }
 
     for (i = 0; i < 1; i++)

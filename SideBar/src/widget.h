@@ -18,6 +18,7 @@
 #include <QtSerialPort/QSerialPort>
 #include <QSerialPortInfo>
 #include <QDateTime>
+#include "hidapi.h"
 
 #include "workthread.h"
 #include "window.h"
@@ -60,6 +61,10 @@ private slots:
     void toolButton_Net_clicked();
     void toolButton_Uart_clicked();
     void toolButton_Mouse_clicked();
+    void getUsbPidVidSlot();
+//    void sendUsbCommand_0x0A_Slot();
+//    void clearInfoUsbDateSlot();
+//    void keyCodeClearSlot();
 
     void changeLabelTime(const QString &Tim);
     void changeLabelFalut(const QString &date);
