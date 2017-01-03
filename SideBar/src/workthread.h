@@ -19,6 +19,10 @@ signals:
     void netSignal();
     void uartSignal();
 
+    void circSignal();
+
+    void sendKeyDataSignal(unsigned char *KeyBuf);
+
 private slots:
     void getTestFlg(int flg);
 

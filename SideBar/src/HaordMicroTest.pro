@@ -34,7 +34,7 @@ HEADERS  += \
 FORMS    += \
     widget.ui
 
-LIBS += $$quote(F:\GitWork\SideBar\src\hidapi.lib)
-
+LIBS += -L$$_PRO_FILE_PWD_/ \
+            -lhidapi
 RESOURCES += \
     resources.qrc

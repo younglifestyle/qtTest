@@ -39,10 +39,15 @@ public:
 
     void sleep(unsigned int msec);
     void initSeialPort();
+    void check_DeviceExist();
+
     QSerialPort serial;//串口实例
     QTimer *timer;
     QTime *time;
     QDateTime dateTime;
+
+    bool circTest_isOk;
+    bool kbdLite_isOk;
 
 signals:
     void changeTestFlg(int);
@@ -61,10 +66,13 @@ private slots:
     void toolButton_Net_clicked();
     void toolButton_Uart_clicked();
     void toolButton_Mouse_clicked();
+    void toolButton_BLANKBD_clicked();
+    void circleButton_clicked();
+
     void getUsbPidVidSlot();
-//    void sendUsbCommand_0x0A_Slot();
-//    void clearInfoUsbDateSlot();
-//    void keyCodeClearSlot();
+    void sendUsbCommand_0x0A_Slot();
+    void clearInfoUsbDateSlot();
+    void keyCodeClearSlot();
 
     void changeLabelTime(const QString &Tim);
     void changeLabelFalut(const QString &date);
@@ -76,6 +84,9 @@ private slots:
     void disk_test();
     void net_test();
     void uart_test();
+    void circ_test();
+
+    void query_SetKeyTextSlot(unsigned char *KeyBuf);
 
     void on_comboBox_currentIndexChanged(const QString &arg1);
 

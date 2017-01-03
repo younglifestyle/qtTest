@@ -1,4 +1,6 @@
 #include "workthread.h"
+#include "hidapi.h"
+
 #include <QDebug>
 
 myThread::myThread(QObject *parent) :
@@ -11,6 +13,17 @@ myThread::myThread(QObject *parent) :
 
 void myThread::run()
 {
+    int res;
+    unsigned char buf1[16];
+    hid_device *handle;
+
+    handle = hid_open(0x04B4, 0x0201, NULL);
+    if(handle == NULL)
+    {
+        qDebug()<<"Unable to open device";
+//        return;
+    }
+
     while( !stopped )
     {
         /* we call test code */
@@ -39,6 +52,30 @@ void myThread::run()
             case UART_TEST:
 //                qDebug() <<" is NET_TEST ";
                 emit this->uartSignal();
+                break;
+
+            case CIRC_TEST:
+                emit this->circSignal();
+                break;
+
+            case MOUS_TEST:
+                break;
+
+            case BLANK_TEST:
+                res = hid_read_timeout(handle, buf1, 8, 15);
+                if(res == -1)
+                {
+                    qDebug()<<"read is failed!";
+                    emit sendKeyDataSignal(NULL);
+                }
+                if( res == 0 )
+                {
+                    continue;
+                }
+                else
+                {
+                    emit sendKeyDataSignal(buf1);
+                }
                 break;
 
             default:
