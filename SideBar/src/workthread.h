@@ -3,6 +3,7 @@
 
 #include <QThread>
 #include "common.h"
+#include "hidapi.h"
 
 class myThread : public QThread
 {
@@ -11,6 +12,8 @@ public:
     explicit myThread(QObject *parent = 0);
     void run();
     void stop();
+
+    static hid_device *handle;
 
 signals:
     void ramSignal();
@@ -22,6 +25,7 @@ signals:
     void circSignal();
 
     void sendKeyDataSignal(unsigned char *KeyBuf);
+    void sendKeyQueryDataSignal(unsigned char *keyBuf);
 
 private slots:
     void getTestFlg(int flg);

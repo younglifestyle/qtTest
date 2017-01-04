@@ -53,6 +53,7 @@
 
 #include <QWidget>
 #include <QDebug>
+#include <QLayout>
 
 class GLWidget;
 

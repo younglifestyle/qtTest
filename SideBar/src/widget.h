@@ -46,6 +46,8 @@ public:
     QTime *time;
     QDateTime dateTime;
 
+    struct hid_device_info devInfo;
+
     bool circTest_isOk;
     bool kbdLite_isOk;
 
@@ -70,7 +72,7 @@ private slots:
     void circleButton_clicked();
 
     void getUsbPidVidSlot();
-    void sendUsbCommand_0x0A_Slot();
+    void sendUsbCommand_0x0A_Slot(unsigned char *keyBuf);
     void clearInfoUsbDateSlot();
     void keyCodeClearSlot();
 
@@ -104,6 +106,7 @@ private:
 
     int falut_Cnt;
     QImage *image;
+    QPixmap *pixmap;
     myThread *thread;
     int *ram;
     Window *window;

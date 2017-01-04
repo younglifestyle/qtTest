@@ -13,7 +13,7 @@ MainWindow::MainWindow(QWidget *parent) :
     setMinimumSize(655,570);
     setMaximumSize(655,570);
     this->setWindowTitle("禾达芯微");
-    threadA.setMessage("Go for it!");
+//    threadA.setMessage("Go for it!");
 
     QObject::connect(ui->getPushButton,SIGNAL(clicked(bool)),this,SLOT(getUsbDeviceSlot()));
     QObject::connect(ui->sendPushButton,SIGNAL(clicked(bool)),this,SLOT(sendUsbDateSlot()));
@@ -84,12 +84,15 @@ void MainWindow::sendUsbDateSlot()
     hid_read(handle, buf2, 8);
     hid_read(handle, buf3, 1);
 
+    hid_close(handle);
+
     // Print out the returned buffer.
     qDebug() << "Data read:";
 
     // Print out the returned buffer.
     for( i = 0; i < 8; i++ )
     {
+        qDebug("buf1 is :%d %02x", i+1, buf1[i]);
         ui->k1LineEdit->setText(QString::number(buf1[1],16));
         ui->k2LineEdit->setText(QString::number(buf1[2],16));
         ui->k3LineEdit->setText(QString::number(buf1[3],16));
@@ -101,7 +104,7 @@ void MainWindow::sendUsbDateSlot()
 
     for( i = 0; i < 8; i++ )
     {
-        qDebug("buf2 is :%d %02x", i,buf2[i]);
+        qDebug("buf2 is :%d %02x", i+8, buf2[i]);
         ui->k8LineEdit->setText(QString::number(buf2[0],16));
         ui->k9LineEdit->setText(QString::number(buf2[1],16));
         ui->k10LineEdit->setText(QString::number(buf2[2],16));
@@ -114,8 +117,8 @@ void MainWindow::sendUsbDateSlot()
 
     for (i = 0; i < 1; i++)
     {        
+        qDebug("buf3 is :%d %02x", i+16, buf3[i]);
         ui->k16LineEdit->setText(QString::number(buf3[0],16));
-        ui->k16LineEdit->setReadOnly(true);
     }
 }
 

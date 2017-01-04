@@ -60,7 +60,7 @@ Window::Window(QWidget *parent) :
     format.setDepthBufferSize(24);
     QSurfaceFormat::setDefaultFormat(format);
 
-    QGridLayout *mainLayout = new QGridLayout;
+    QHBoxLayout *mainLayout = new QHBoxLayout;
 //    parent->layout()   /* 返回父界面的layout */
     QColor clearColor;
     clearColor.setHsv(203, 213, 131);
@@ -68,10 +68,12 @@ Window::Window(QWidget *parent) :
     glWidgets = new GLWidget;
     glWidgets->setClearColor(clearColor);
     glWidgets->rotateBy(+42 * 16, +42 * 16, -21 * 16);
+    glWidgets->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     mainLayout->setAlignment(parent, Qt::AlignCenter);
 
     mainLayout->addWidget(glWidgets);
+    mainLayout->setSpacing(0);
 
     setLayout(mainLayout);
 
@@ -80,8 +82,6 @@ Window::Window(QWidget *parent) :
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &Window::rotateOneStep);
 //    timer->start(30);
-
-    setWindowTitle(tr("3D测试"));
 
     int wd = parent->width();
     int ht = parent->height();

@@ -22,18 +22,23 @@ Widget::Widget(QWidget *parent) :
 
 //    window->moveToThread(thread);     /* 将该类移动到线程中，但是该类在主线程调用的函数还是会运行在主线程中 */
 
+    pixmap = new QPixmap[3];
     image = new QImage[3];
     image[0].load(":/images/resources/1.jpg");
     image[1].load(":/images/resources/2.jpg");
     image[2].load(":/images/resources/3.jpg");
     ui->label_4->setPixmap(QPixmap::fromImage(image[0]));
 
+    pixmap[0] = QPixmap::fromImage(image[0]);
+    pixmap[1] = QPixmap::fromImage(image[1]);
+    pixmap[2] = QPixmap::fromImage(image[2]);
+
     QString localIP = this->get_localmachine_ip();
     ui->label_local_ip->setStyleSheet("color: rgb(234, 234, 234)");
     ui->label_local_ip->setText(localIP);
 
     /* 隐藏掉Tab */
-//    ui->testWidget->tabBar()->hide();
+    ui->testWidget->tabBar()->hide();
 
     /* 先暂时在程序启动时显示第一个测试界面，后面可以直接hide testUI */
     ui->testWidget->setCurrentIndex(0);
@@ -73,7 +78,6 @@ Widget::Widget(QWidget *parent) :
 
     connect(ui->circleButton,       SIGNAL(clicked()), this,  SLOT(circleButton_clicked()));
     connect(ui->getPushButton,      SIGNAL(clicked()), this,  SLOT(getUsbPidVidSlot()));
-    connect(ui->sendPushButton,     SIGNAL(clicked()), this,  SLOT(sendUsbCommand_0x0A_Slot()));
     connect(ui->clearrecPushButton, SIGNAL(clicked()), this,  SLOT(clearInfoUsbDateSlot()));
     connect(ui->queryclearPushButton,SIGNAL(clicked()),this,  SLOT(keyCodeClearSlot()));
 
@@ -89,7 +93,8 @@ Widget::Widget(QWidget *parent) :
 
     connect(thread, SIGNAL(circSignal()), this, SLOT(circ_test()),      Qt::BlockingQueuedConnection);
 
-    connect(thread, SIGNAL(sendKeyDataSignal(unsigned char*)), this, SLOT(query_SetKeyTextSlot(unsigned char*)), Qt::BlockingQueuedConnection);
+    connect(thread, SIGNAL(sendKeyDataSignal(unsigned char*)),  this,   SLOT(query_SetKeyTextSlot(unsigned char*)), Qt::BlockingQueuedConnection);
+    connect(thread, SIGNAL(sendKeyQueryDataSignal(unsigned char*)), this,  SLOT(sendUsbCommand_0x0A_Slot(unsigned char*)), Qt::BlockingQueuedConnection);
 
     this->thread->start();
 
@@ -112,6 +117,7 @@ Widget::~Widget()
     delete timer;
     delete time;
 
+    hid_close(myThread::handle);
     hid_exit();
     delete ui;
 }
@@ -119,42 +125,48 @@ Widget::~Widget()
 void Widget::check_DeviceExist()
 {
     struct hid_device_info *devs, *cur_dev;
-    int i = 0;
+//    int i = 0;
 
     kbdLite_isOk = false;
 
     devs = hid_enumerate(0x0, 0x0);
     cur_dev = devs;
+
     while (cur_dev)
     {
         if( cur_dev->vendor_id == 0x04B4 && cur_dev->product_id == 0x0201 )
-        {
-            qDebug() << " kbdLite_isOk ";
+        {            
+            devInfo = *cur_dev;
             kbdLite_isOk = true;
-            ui->toolButton_kbdlite->setEnabled(true);
+//            ui->toolButton_kbdlite->setEnabled(true);
         }
         else
         {
             kbdLite_isOk = false;
-            ui->toolButton_kbdlite->setEnabled(false);
         }
 
+//        qDebug() << " kbdLite ";
         /* i作为一个计数，默认为USB设备超过两个即可判断鼠标键盘空白热键都存在 */
-        i++;
-        if( i >= 2 )
-        {
-            ui->toolButton_kbd->setEnabled(true);
-            ui->toolButton_mouse->setEnabled(true);
-        }
-        else
-        {
-            ui->toolButton_kbd->setEnabled(false);
-            ui->toolButton_mouse->setEnabled(false);
-        }
+//        i++;
+//        if( i >= 3 )
+//        {
+//            ui->toolButton_kbd->setEnabled(true);
+//            ui->toolButton_mouse->setEnabled(true);
+//        }
+//        else
+//        {
+//            ui->toolButton_kbd->setEnabled(false);
+//            ui->toolButton_mouse->setEnabled(false);
+//        }
         cur_dev = cur_dev->next;
     }
 
     hid_free_enumeration(devs);
+
+    if( kbdLite_isOk )
+    {
+        myThread::handle = hid_open(0x04B4, 0x0201, NULL);
+    }
 }
 
 void Widget::initButtons()
@@ -357,6 +369,7 @@ void Widget::toolButton_Mouse_clicked()
 
 void Widget::toolButton_BLANKBD_clicked()
 {
+    struct hid_device_info *devs;
     circTest_isOk = false;
 
     if( kbdLite_isOk == true )
@@ -366,7 +379,27 @@ void Widget::toolButton_BLANKBD_clicked()
     }
     else
     {
-         QMessageBox::warning(this, "warning Message", "USB设备未插入或被占用");
+        devs = hid_enumerate(0x04B4, 0x0201);
+        if( devs )
+        {
+            devInfo = *devs;
+        }
+        else
+        {
+            QMessageBox::warning(this, "warning Message", "USB设备未插入或被占用");
+            return;
+        }
+        hid_free_enumeration(devs);
+
+        if( !(myThread::handle = hid_open(0x04B4, 0x0201, NULL)) )
+        {
+            QMessageBox::warning(this, "warning Message", "USB设备未插入或被占用");
+            return;
+        }
+
+        kbdLite_isOk = true;
+        ui->testWidget->setCurrentIndex(6);
+        emit this->changeTestFlg(BLANK_TEST);
     }
 }
 
@@ -379,91 +412,53 @@ void Widget::circleButton_clicked()
 
 void Widget::getUsbPidVidSlot()
 {
-    struct hid_device_info *devs, *cur_dev;
+//    struct hid_device_info *devs, *cur_dev;
 
-    devs = hid_enumerate(0x04B4, 0x0201);
-    if( !devs )
-    {
-        ui->vidLineEdit->setText(" USB设备未插入或被占用 ");
-        ui->pidLineEdit->setText(" USB设备未插入或被占用 ");
-        ui->serLineEdit->setText(" USB设备未插入或被占用 ");
-        return;
-    }
+//    devs = hid_enumerate(0x04B4, 0x0201);
+//    if( !devs )
+//    {
+//        ui->vidLineEdit->setText(" USB设备未插入或被占用 ");
+//        ui->pidLineEdit->setText(" USB设备未插入或被占用 ");
+//        ui->serLineEdit->setText(" USB设备未插入或被占用 ");
+//        return;
+//    }
 
-    cur_dev = devs;
-    unsigned short VID = cur_dev->vendor_id;
-    unsigned short PID = cur_dev->product_id;
-    wchar_t *Ser_Num = cur_dev->serial_number;
+//    struct hid_device_info *devs, *cur_dev;
+
+//    devs = hid_enumerate(0x04B4, 0x0201);
+//    cur_dev = devs;
+
+    unsigned short VID = devInfo.vendor_id;
+    unsigned short PID = devInfo.product_id;
+    wchar_t *Ser_Num = devInfo.serial_number;
 
     ui->vidLineEdit->setText("0x0" + QString::number(VID, 16));
     ui->pidLineEdit->setText("0x0" + QString::number(PID, 16));
     ui->serLineEdit->setText(QString::number(*Ser_Num));
 
-    hid_free_enumeration(devs);
+//    hid_free_enumeration(devs);
 }
 
-void Widget::sendUsbCommand_0x0A_Slot()
+void Widget::sendUsbCommand_0x0A_Slot(unsigned char *keyBuf)
 {
-    unsigned char buf1[8];
-    unsigned char buf2[8];
-    unsigned char buf3[8];
-    hid_device *handle;
-    int i;
+    ui->k1LineEdit->setText("0x" + QString::number(keyBuf[1],16));
+    ui->k2LineEdit->setText("0x" + QString::number(keyBuf[2],16));
+    ui->k3LineEdit->setText("0x" + QString::number(keyBuf[3],16));
+    ui->k4LineEdit->setText("0x" + QString::number(keyBuf[4],16));
+    ui->k5LineEdit->setText("0x" + QString::number(keyBuf[5],16));
+    ui->k6LineEdit->setText("0x" + QString::number(keyBuf[6],16));
+    ui->k7LineEdit->setText("0x" + QString::number(keyBuf[7],16));
 
-    handle = hid_open(0x04B4, 0x0201, NULL);
-    if ( !handle )
-    {
-        qDebug() << "unable to open device";
-        return;
-    }
-    // Set up the command buffer.
-    memset(buf1, 0, sizeof(buf1));
-    memset(buf2, 0, sizeof(buf2));
-    memset(buf3, 0, sizeof(buf3));
-    buf1[0] = 0x0;
-    buf1[1] = 0x0A;
+    ui->k8LineEdit->setText("0x" + QString::number(keyBuf[8],16));
+    ui->k9LineEdit->setText("0x" + QString::number(keyBuf[9],16));
+    ui->k10LineEdit->setText("0x" + QString::number(keyBuf[10],16));
+    ui->k11LineEdit->setText("0x" + QString::number(keyBuf[11],16));
+    ui->k12LineEdit->setText("0x" + QString::number(keyBuf[12],16));
+    ui->k13LineEdit->setText("0x" + QString::number(keyBuf[13],16));
+    ui->k14LineEdit->setText("0x" + QString::number(keyBuf[14],16));
+    ui->k15LineEdit->setText("0x" + QString::number(keyBuf[15],16));
 
-    hid_write(handle, buf1, 2);
-
-    hid_read(handle, buf1, 8);
-    hid_read(handle, buf2, 8);
-    hid_read(handle, buf3, 1);
-
-    hid_close(handle);
-
-    // Print out the returned buffer.
-    qDebug() << "Data read:";
-
-    // Print out the returned buffer.
-    for( i = 0; i < 8; i++ )
-    {
-        ui->k1LineEdit->setText(QString::number(buf1[1],16));
-        ui->k2LineEdit->setText(QString::number(buf1[2],16));
-        ui->k3LineEdit->setText(QString::number(buf1[3],16));
-        ui->k4LineEdit->setText(QString::number(buf1[4],16));
-        ui->k5LineEdit->setText(QString::number(buf1[5],16));
-        ui->k6LineEdit->setText(QString::number(buf1[6],16));
-        ui->k7LineEdit->setText(QString::number(buf1[7],16));
-    }
-
-    for( i = 0; i < 8; i++ )
-    {
-        qDebug("buf2 is :%d %02x", i,buf2[i]);
-        ui->k8LineEdit->setText(QString::number(buf2[0],16));
-        ui->k9LineEdit->setText(QString::number(buf2[1],16));
-        ui->k10LineEdit->setText(QString::number(buf2[2],16));
-        ui->k11LineEdit->setText(QString::number(buf2[3],16));
-        ui->k12LineEdit->setText(QString::number(buf2[4],16));
-        ui->k13LineEdit->setText(QString::number(buf2[5],16));
-        ui->k14LineEdit->setText(QString::number(buf2[6],16));
-        ui->k15LineEdit->setText(QString::number(buf2[7],16));
-    }
-
-    for (i = 0; i < 1; i++)
-    {
-        ui->k16LineEdit->setText(QString::number(buf3[0],16));
-        ui->k16LineEdit->setReadOnly(true);
-    }
+    ui->k16LineEdit->setText("0x" + QString::number(keyBuf[16],16));
 }
 
 void Widget::clearInfoUsbDateSlot()
@@ -497,6 +492,7 @@ void Widget::query_SetKeyTextSlot(unsigned char *KeyBuf)
     if( KeyBuf == NULL )
     {
         ui->keyTextEdit->append(" can not read the key data! ");
+        return;
     }
     else
     {
@@ -593,6 +589,8 @@ void Widget::uart_test()
     ui->textEdit_4->clear();
     ui->textEdit_5->clear();
 
+    qDebug() << serial.write(ch);
+
     if( serial.write(ch) == -1 && ui->testWidget->currentIndex() == 4 )
     {
         falut_Cnt += 1;
@@ -651,6 +649,10 @@ void Widget::uart_test()
     {
         ui->textEdit_5->setText("发送数据：" + strText + "  成功");
     }
+
+    sleep(700);
+
+    ui->comboBox->currentIndexChanged(ui->comboBox->currentText());
 }
 
 void Widget::toggle_Picture()
@@ -658,7 +660,7 @@ void Widget::toggle_Picture()
     ui->label_4->show();
     if( ui->testWidget->currentIndex() == 2 )
     {
-        ui->label_4->setPixmap(QPixmap::fromImage(image[0]));
+        ui->label_4->setPixmap(pixmap[0]);
         sleep(1000);
     }
     else
@@ -668,7 +670,7 @@ void Widget::toggle_Picture()
 
     if( ui->testWidget->currentIndex() == 2 )
     {
-        ui->label_4->setPixmap(QPixmap::fromImage(image[1]));
+        ui->label_4->setPixmap(pixmap[1].scaled(ui->label_4->size()));
         sleep(1000);
     }
     else
@@ -678,7 +680,7 @@ void Widget::toggle_Picture()
 
     if( ui->testWidget->currentIndex() == 2 )
     {
-        ui->label_4->setPixmap(QPixmap::fromImage(image[2]));
+        ui->label_4->setPixmap(QPixmap::fromImage(image[2]).scaled(ui->label_4->size()));
         sleep(1000);
     }
     else
@@ -691,7 +693,7 @@ void Widget::toggle_Picture()
         ui->label_4->hide();
         window->show();
         window->timer->start(40);
-        sleep(2000);
+        sleep(3000);
         window->timer->stop();
         window->hide();
         sleep(50);
@@ -1063,7 +1065,6 @@ QString Widget::get_localmachine_ip()
 
     return ipAddress;
 }
-
 
 void Widget::on_comboBox_currentIndexChanged(const QString &arg1)
 {

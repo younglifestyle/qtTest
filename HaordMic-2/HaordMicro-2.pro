@@ -22,6 +22,6 @@ HEADERS  += mainwindow.h \
     hidapi.h \
     thread.h
 
-LIBS += $$quote(E:\QT_works\HaordMicro_2\hidapi.lib)
+LIBS += $$quote("F:\GitWork\HaordMic-2\hidapi.lib")
 
 FORMS    += mainwindow.ui

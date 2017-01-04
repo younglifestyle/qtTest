@@ -20,7 +20,7 @@
    <string>禾达芯微</string>
   </property>
   <property name="windowIcon">
-   <iconset>
+   <iconset resource="resources.qrc">
     <normaloff>:/images/resources/title.ico</normaloff>:/images/resources/title.ico</iconset>
   </property>
   <property name="styleSheet">
@@ -154,8 +154,14 @@ QWidget.SideBar QPushButton:pressed {
      </property>
      <property name="minimumSize">
       <size>
-       <width>120</width>
+       <width>100</width>
        <height>0</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>100</width>
+       <height>16777215</height>
       </size>
      </property>
      <property name="class" stdset="0">
@@ -186,7 +192,7 @@ QWidget.SideBar QPushButton:pressed {
          <string>空白热键</string>
         </property>
         <property name="icon">
-         <iconset>
+         <iconset resource="resources.qrc">
           <normaloff>:/images/resources/RUN-icon.png</normaloff>:/images/resources/RUN-icon.png</iconset>
         </property>
         <property name="iconSize">
@@ -429,7 +435,7 @@ QWidget.SideBar QPushButton:pressed {
          <string>网卡测试</string>
         </property>
         <property name="icon">
-         <iconset>
+         <iconset resource="resources.qrc">
           <normaloff>:/images/resources/button-4.png</normaloff>:/images/resources/button-4.png</iconset>
         </property>
         <property name="iconSize">
@@ -455,7 +461,7 @@ QWidget.SideBar QPushButton:pressed {
          <string>内存测试</string>
         </property>
         <property name="icon">
-         <iconset>
+         <iconset resource="resources.qrc">
           <normaloff>:/images/resources/button-1.png</normaloff>:/images/resources/button-1.png</iconset>
         </property>
         <property name="iconSize">
@@ -481,7 +487,7 @@ QWidget.SideBar QPushButton:pressed {
          <string>2D/3D测试</string>
         </property>
         <property name="icon">
-         <iconset>
+         <iconset resource="resources.qrc">
           <normaloff>:/images/resources/button-3.png</normaloff>:/images/resources/button-3.png</iconset>
         </property>
         <property name="iconSize">
@@ -507,7 +513,7 @@ QWidget.SideBar QPushButton:pressed {
          <string>磁盘测试</string>
         </property>
         <property name="icon">
-         <iconset>
+         <iconset resource="resources.qrc">
           <normaloff>:/images/resources/button-2.png</normaloff>:/images/resources/button-2.png</iconset>
         </property>
         <property name="iconSize">
@@ -533,7 +539,7 @@ QWidget.SideBar QPushButton:pressed {
          <string>串口测试</string>
         </property>
         <property name="icon">
-         <iconset>
+         <iconset resource="resources.qrc">
           <normaloff>:/images/resources/button-5.png</normaloff>:/images/resources/button-5.png</iconset>
         </property>
         <property name="iconSize">
@@ -559,7 +565,7 @@ QWidget.SideBar QPushButton:pressed {
          <string>键盘测试</string>
         </property>
         <property name="icon">
-         <iconset>
+         <iconset resource="resources.qrc">
           <normaloff>:/images/resources/keyboard.png</normaloff>:/images/resources/keyboard.png</iconset>
         </property>
         <property name="iconSize">
@@ -585,7 +591,7 @@ QWidget.SideBar QPushButton:pressed {
          <string>鼠标测试</string>
         </property>
         <property name="icon">
-         <iconset>
+         <iconset resource="resources.qrc">
           <normaloff>:/images/resources/Mouse.png</normaloff>:/images/resources/Mouse.png</iconset>
         </property>
         <property name="iconSize">
@@ -605,7 +611,7 @@ QWidget.SideBar QPushButton:pressed {
    <item row="0" column="1">
     <widget class="QTabWidget" name="testWidget">
      <property name="currentIndex">
-      <number>6</number>
+      <number>4</number>
      </property>
      <property name="class" stdset="0">
       <string>tabWidget</string>
@@ -990,19 +996,13 @@ p, li { white-space: pre-wrap; }
       <attribute name="title">
        <string>Tab 3</string>
       </attribute>
-      <layout class="QFormLayout" name="formLayout_2">
-       <item row="0" column="0" colspan="2">
+      <layout class="QHBoxLayout" name="horizontalLayout_20">
+       <item>
         <widget class="QLabel" name="label_4">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
          <property name="minimumSize">
           <size>
            <width>0</width>
-           <height>500</height>
+           <height>0</height>
           </size>
          </property>
          <property name="frameShape">
@@ -2651,6 +2651,44 @@ p, li { white-space: pre-wrap; }
                </property>
                <layout class="QHBoxLayout" name="horizontalLayout_18">
                 <item>
+                 <widget class="QPushButton" name="startQPushButton">
+                  <property name="minimumSize">
+                   <size>
+                    <width>50</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">QPushButton {
+	color: white;
+    border-right: 1px solid rgb(180, 180, 180);
+    background: qlineargradient(spread:reflect,
+        x1:0, y1:0, x2:1, y2:0,
+        stop:0 rgba(23, 95, 139, 255),
+        stop:1 rgba(27, 110, 162, 255));
+    border-width: 2px;
+    border-color: rgb(150, 150, 150);
+    border-style: outset;
+    border-radius: 5;
+    padding: 3px;
+}
+
+QPushButton:hover {
+   background-color: rgb(255, 89, 97);
+}
+
+QPushButton:pressed {
+    padding-left: 5px;
+    padding-top: 5px;
+    background-color: rgb(255, 89, 97);
+}</string>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                 </widget>
+                </item>
+                <item>
                  <widget class="QPushButton" name="queryclearPushButton">
                   <property name="minimumSize">
                    <size>
@@ -3303,6 +3341,8 @@ QPushButton[first=&quot;true&quot;] {
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -1,7 +1,8 @@
 #include "workthread.h"
-#include "hidapi.h"
 
 #include <QDebug>
+
+hid_device * myThread::handle = NULL;
 
 myThread::myThread(QObject *parent) :
     QThread(parent)
@@ -14,15 +15,14 @@ myThread::myThread(QObject *parent) :
 void myThread::run()
 {
     int res;
-    unsigned char buf1[16];
-    hid_device *handle;
+    unsigned char buf1[20];
 
-    handle = hid_open(0x04B4, 0x0201, NULL);
-    if(handle == NULL)
-    {
-        qDebug()<<"Unable to open device";
-//        return;
-    }
+//    handle = hid_open(0x04B4, 0x0201, NULL);
+//    if( !handle )
+//    {
+//        qDebug()<<"Unable to open device";
+////        return;
+//    }
 
     while( !stopped )
     {
@@ -62,11 +62,12 @@ void myThread::run()
                 break;
 
             case BLANK_TEST:
-                res = hid_read_timeout(handle, buf1, 8, 15);
+                res = hid_read_timeout(handle, buf1, 8, 30);
                 if(res == -1)
                 {
                     qDebug()<<"read is failed!";
                     emit sendKeyDataSignal(NULL);
+                    continue;
                 }
                 if( res == 0 )
                 {
@@ -76,6 +77,19 @@ void myThread::run()
                 {
                     emit sendKeyDataSignal(buf1);
                 }
+
+                /* 获取状态查询码 */
+                buf1[0] = 0x0;
+                buf1[1] = 0x0A;
+
+                hid_write(this->handle, buf1, 2);
+
+                hid_read(this->handle, buf1,    8);
+                hid_read(this->handle, buf1+8,  8);
+                hid_read(this->handle, buf1+16, 1);
+
+                emit sendKeyQueryDataSignal(buf1);
+
                 break;
 
             default:

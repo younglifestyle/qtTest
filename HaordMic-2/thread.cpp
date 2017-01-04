@@ -47,7 +47,7 @@ void Thread::run()
             return;
         }
 
-        qDebug()<<messagesStr;
+//        qDebug()<<messagesStr;
         qDebug()<<buf1[1];
         if( res == 0 )
         {
