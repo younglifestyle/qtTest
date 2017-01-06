@@ -3,6 +3,7 @@
 #include <QDebug>
 
 hid_device * myThread::handle = NULL;
+bool myThread::KeyQuery_0A = false;
 
 myThread::myThread(QObject *parent) :
     QThread(parent)
@@ -62,6 +63,21 @@ void myThread::run()
                 break;
 
             case BLANK_TEST:
+                if( KeyQuery_0A )
+                {
+                    /* 获取状态查询码 */
+                    buf1[0] = 0x0;
+                    buf1[1] = 0x0A;
+
+                    hid_write(this->handle, buf1, 2);
+
+                    hid_read(this->handle, buf1,    8);
+                    hid_read(this->handle, buf1+8,  8);
+                    hid_read(this->handle, buf1+16, 1);
+
+                    emit sendKeyQueryDataSignal(buf1);
+                }
+
                 res = hid_read_timeout(handle, buf1, 8, 30);
                 if(res == -1)
                 {
@@ -77,18 +93,6 @@ void myThread::run()
                 {
                     emit sendKeyDataSignal(buf1);
                 }
-
-                /* 获取状态查询码 */
-                buf1[0] = 0x0;
-                buf1[1] = 0x0A;
-
-                hid_write(this->handle, buf1, 2);
-
-                hid_read(this->handle, buf1,    8);
-                hid_read(this->handle, buf1+8,  8);
-                hid_read(this->handle, buf1+16, 1);
-
-                emit sendKeyQueryDataSignal(buf1);
 
                 break;
 

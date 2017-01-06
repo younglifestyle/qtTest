@@ -21,7 +21,8 @@ SOURCES += main.cpp \
     widget.cpp \
     workthread.cpp \
     glwidget.cpp \
-    window.cpp
+    window.cpp \
+    toolbutton_and_task.cpp
 
 HEADERS  += \
     widget.h \

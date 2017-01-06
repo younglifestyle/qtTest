@@ -72,9 +72,11 @@ private slots:
     void circleButton_clicked();
 
     void getUsbPidVidSlot();
-    void sendUsbCommand_0x0A_Slot(unsigned char *keyBuf);
+    void receive0x0AData_setText_Slot(unsigned char *keyBuf);
     void clearInfoUsbDateSlot();
     void keyCodeClearSlot();
+
+    void sendUsbCommand_0x0AFlg_Slot();
 
     void changeLabelTime(const QString &Tim);
     void changeLabelFalut(const QString &date);
@@ -99,6 +101,8 @@ protected:
     void mousePressEvent(QMouseEvent *e);
     //鼠标松开事件
     void mouseReleaseEvent(QMouseEvent *);
+    //按键按下事件
+    void keyPressEvent(QKeyEvent *e);
 
 private:
     Ui::Widget *ui;

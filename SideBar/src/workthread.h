@@ -14,6 +14,7 @@ public:
     void stop();
 
     static hid_device *handle;
+    static bool KeyQuery_0A;
 
 signals:
     void ramSignal();
