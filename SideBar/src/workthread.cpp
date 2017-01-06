@@ -16,7 +16,8 @@ myThread::myThread(QObject *parent) :
 void myThread::run()
 {
     int res;
-    unsigned char buf1[20];
+    unsigned char buf1[17];
+    unsigned char buf2[8];
 
 //    handle = hid_open(0x04B4, 0x0201, NULL);
 //    if( !handle )
@@ -63,8 +64,30 @@ void myThread::run()
                 break;
 
             case BLANK_TEST:
+                memset(buf2, 0, sizeof(buf2));
+                memset(buf1, 0, sizeof(buf1));
+
+                res = hid_read_timeout(handle, buf2, 8, 60);
+                if(res == -1)
+                {
+                    qDebug()<<"read is failed!";
+                    emit sendKeyDataSignal(NULL);
+                    continue;
+                }
+                if( res == 0 )
+                {
+//                    continue;
+                }
+                else
+                {
+                    emit sendKeyDataSignal(buf2);
+                }
+
                 if( KeyQuery_0A )
                 {
+                    /* 按下一次查询，只查询一次 */
+                    KeyQuery_0A = false;
+
                     /* 获取状态查询码 */
                     buf1[0] = 0x0;
                     buf1[1] = 0x0A;
@@ -76,22 +99,6 @@ void myThread::run()
                     hid_read(this->handle, buf1+16, 1);
 
                     emit sendKeyQueryDataSignal(buf1);
-                }
-
-                res = hid_read_timeout(handle, buf1, 8, 30);
-                if(res == -1)
-                {
-                    qDebug()<<"read is failed!";
-                    emit sendKeyDataSignal(NULL);
-                    continue;
-                }
-                if( res == 0 )
-                {
-                    continue;
-                }
-                else
-                {
-                    emit sendKeyDataSignal(buf1);
                 }
 
                 break;

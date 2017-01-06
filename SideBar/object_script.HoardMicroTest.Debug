@@ -1,0 +1,13 @@
+INPUT(
+./temp\main.o
+./temp\widget.o
+./temp\workthread.o
+./temp\glwidget.o
+./temp\window.o
+./temp\toolbutton_and_task.o
+./temp\qrc_resources.o
+./temp\moc_widget.o
+./temp\moc_workthread.o
+./temp\moc_glwidget.o
+./temp\moc_window.o
+);

@@ -264,9 +264,9 @@ void Widget::receive0x0AData_setText_Slot(unsigned char *keyBuf)
 void Widget::sendUsbCommand_0x0AFlg_Slot()
 {
     if( myThread::KeyQuery_0A == false )
+    {
         myThread::KeyQuery_0A = true;
-    else
-        myThread::KeyQuery_0A = false;
+    }
 }
 
 void Widget::clearInfoUsbDateSlot()
