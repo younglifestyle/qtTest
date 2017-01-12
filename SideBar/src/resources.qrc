@@ -20,5 +20,8 @@
         <file>resources/side6.png</file>
         <file>resources/1downarrow.ico</file>
         <file>resources/title.ico</file>
+        <file>resources/title1.png</file>
+        <file>resources/title2.png</file>
+        <file>resources/config.txt</file>
     </qresource>
 </RCC>

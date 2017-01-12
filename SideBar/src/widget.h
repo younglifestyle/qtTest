@@ -18,6 +18,8 @@
 #include <QtSerialPort/QSerialPort>
 #include <QSerialPortInfo>
 #include <QDateTime>
+#include <QDir>
+#include <QFileDialog>
 #include "hidapi.h"
 
 #include "workthread.h"
@@ -40,6 +42,8 @@ public:
     void sleep(unsigned int msec);
     void initSeialPort();
     void check_DeviceExist();
+    void setfaultLogTextEdit();
+    void resizeEvent(QResizeEvent* event);
 
     QSerialPort serial;//串口实例
     QTimer *timer;
@@ -54,13 +58,15 @@ public:
 signals:
     void changeTestFlg(int);
     void changeTimeDate(const QString &Tim);
-    void changeFalutDate(const QString &date);
+    void changefaultDate(const QString &date);
+    void changeCircleDate(const QString &date);
 
 public slots:
     void onTimeout();
 
 private slots:
     void changeButtonStatus();
+    void changePushButtonStatus();
 
     void toolButton_Ram_clicked();
     void toolButton_Disk_clicked();
@@ -70,6 +76,8 @@ private slots:
     void toolButton_Mouse_clicked();
     void toolButton_BLANKBD_clicked();
     void circleButton_clicked();
+    void checkFaultLog_Slot();
+    void deleteFaultLog_Slot();
 
     void getUsbPidVidSlot();
     void receive0x0AData_setText_Slot(unsigned char *keyBuf);
@@ -79,9 +87,8 @@ private slots:
     void sendUsbCommand_0x0AFlg_Slot();
 
     void changeLabelTime(const QString &Tim);
-    void changeLabelFalut(const QString &date);
-
-    void exitButton();
+    void changeLabelfault(const QString &date);
+    void changeLableCircleDate(const QString &date);
 
     void toggle_Picture();
     void ram_test();
@@ -94,6 +101,8 @@ private slots:
 
     void on_comboBox_currentIndexChanged(const QString &arg1);
 
+    void checkBox_stateChanged(int state);
+
 protected:
     //鼠标拖动事件
     void mouseMoveEvent(QMouseEvent *e);
@@ -105,10 +114,25 @@ protected:
     void keyPressEvent(QKeyEvent *e);
 
 private:
+    enum { RAM_CNT = 40, DISK_CNT = 48 };
+    enum { RAM = 0x01, DISK = 0x02, PIC = 0x04, NET = 0x08, UART = 0x10 };
+    enum {DONT_GO = 0, GO};
+
     Ui::Widget *ui;
     QList<QToolButton *> buttons;
+    QList<QPushButton *> buttons_Ram;
+    QList<QPushButton *> buttons_Disk;
+    QList<QPushButton *> ui_RightButtons;
+    QList<QCheckBox *>   checkBoxs;
+    QStringList inputFault;
 
-    int falut_Cnt;
+    QFile *faultfile;
+    int fault_Cnt;
+    int circle_Cnt;
+
+    int checkBox_TestFlg[5];
+    int check_FlgTS;
+
     QImage *image;
     QPixmap *pixmap;
     myThread *thread;

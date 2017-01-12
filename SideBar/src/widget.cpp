@@ -3,17 +3,22 @@
 
 Widget::Widget(QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::Widget)
+    ui(new Ui::Widget),
+    fault_Cnt(0),
+    circle_Cnt(0),
+    checkBox_TestFlg(0),
+    ram(new int[40])
 {
     ui->setupUi(this);
+
+    /* 初始化一些按键 */
     initButtons();
 
     QThread *thread1 = new QThread;
 
-    falut_Cnt = 0;
     thread = new myThread(this);
-    ram = new int[645];
-    for(int i = 0; i < 645; i++)
+
+    for(int i = 0; i < 40; i++)
         ram[i] = 'R';
 
     window = new Window(ui->tab_3);
@@ -21,6 +26,8 @@ Widget::Widget(QWidget *parent) :
     window->setStyleSheet("background-color:transparent;");
 
 //    window->moveToThread(thread);     /* 将该类移动到线程中，但是该类在主线程调用的函数还是会运行在主线程中 */
+
+    faultfile = new QFile("faultLog.txt");
 
     pixmap = new QPixmap[3];
     image = new QImage[3];
@@ -33,23 +40,19 @@ Widget::Widget(QWidget *parent) :
     pixmap[1] = QPixmap::fromImage(image[1]);
     pixmap[2] = QPixmap::fromImage(image[2]);
 
-    QString localIP = this->get_localmachine_ip();
-    ui->label_local_ip->setStyleSheet("color: rgb(234, 234, 234)");
-    ui->label_local_ip->setText(localIP);
+//    QString localIP = this->get_localmachine_ip();
+//    ui->label_local_ip->setStyleSheet("color: rgb(234, 234, 234)");
+//    ui->label_local_ip->setText(localIP);
 
     /* 隐藏掉Tab */
-    ui->testWidget->tabBar()->hide();
+//    ui->testWidget->tabBar()->hide();
 
     /* 先暂时在程序启动时显示第一个测试界面，后面可以直接hide testUI */
     ui->testWidget->setCurrentIndex(0);
 
     /* 去掉TextEdit的背景色，使其透明化 */
-    ui->textEdit->setStyleSheet("background-color:transparent;");
-    ui->disk_textEdit1->setStyleSheet("background-color:transparent;");
-    ui->disk_textEdit2->setStyleSheet("background-color:transparent;");
-
-    ui->net_textEdit1->setStyleSheet("color: rgb(234, 234, 234); background-color: rgb(25, 105, 154); font: bold; font-size : 24px");
-    ui->net_textEdit2->setStyleSheet("color: rgb(234, 234, 234); background-color: rgb(25, 105, 154); font: bold; font-size : 24px");
+//    ui->textEdit->setStyleSheet("background-color:transparent;");
+//    ui->net_textEdit1->setStyleSheet("color: rgb(234, 234, 234); background-color: rgb(25, 105, 154); font: bold; font-size : 24px");
 
     /* 设置按钮不可用 */
     ui->leftButton->setEnabled(false);
@@ -61,11 +64,19 @@ Widget::Widget(QWidget *parent) :
     ui->timeCnt->setText("00:00:00");
     ui->errorCnt->setText("0");
 
+    /* 设置测试报告 */
+    setfaultLogTextEdit();
+
     /* 初始化串口 */
     initSeialPort();
 
     /* 检查USB设备、空白热键 */
     check_DeviceExist();
+
+    foreach (QCheckBox *c, checkBoxs)
+    {
+        c->hide();
+    }
 
     connect(ui->toolButton_ram,     SIGNAL(clicked()), this,  SLOT(toolButton_Ram_clicked()));
     connect(ui->toolButton_disk,    SIGNAL(clicked()), this,  SLOT(toolButton_Disk_clicked()));
@@ -74,7 +85,7 @@ Widget::Widget(QWidget *parent) :
     connect(ui->toolButton_uart,    SIGNAL(clicked()), this,  SLOT(toolButton_Uart_clicked()));
     connect(ui->toolButton_mouse,   SIGNAL(clicked()), this,  SLOT(toolButton_Mouse_clicked()));
     connect(ui->toolButton_kbdlite, SIGNAL(clicked()), this,  SLOT(toolButton_BLANKBD_clicked()));
-    connect(ui->exitButton,         SIGNAL(clicked()), this,  SLOT(exitButton()));
+    connect(ui->exitButton,         SIGNAL(clicked()), qApp,  SLOT(quit()));
 
     connect(ui->circleButton,       SIGNAL(clicked()), this,  SLOT(circleButton_clicked()));
 
@@ -84,8 +95,9 @@ Widget::Widget(QWidget *parent) :
     connect(ui->QueryCodePushButton, SIGNAL(clicked()), this,  SLOT(sendUsbCommand_0x0AFlg_Slot()));
 
     connect(this, SIGNAL(changeTestFlg(int)), thread, SLOT(getTestFlg(int)));   /* 连接线程 */
-    connect(this, SIGNAL(changeTimeDate(QString)), this, SLOT(changeLabelTime(QString)));
-    connect(this, SIGNAL(changeFalutDate(QString)), this, SLOT(changeLabelFalut(QString)));
+    connect(this, SIGNAL(changeTimeDate(QString)),  this, SLOT(changeLabelTime(QString)));
+    connect(this, SIGNAL(changefaultDate(QString)), this, SLOT(changeLabelfault(QString)));
+    connect(this, SIGNAL(changeCircleDate(QString)),this, SLOT(changeLableCircleDate(QString)));
 
     connect(thread, SIGNAL(ramSignal()),  this, SLOT(ram_test()),       Qt::BlockingQueuedConnection);
     connect(thread, SIGNAL(diskSignal()), this, SLOT(disk_test()),      Qt::BlockingQueuedConnection);
@@ -94,6 +106,8 @@ Widget::Widget(QWidget *parent) :
     connect(thread, SIGNAL(uartSignal()), this, SLOT(uart_test()),      Qt::BlockingQueuedConnection);
 
     connect(thread, SIGNAL(circSignal()), this, SLOT(circ_test()),      Qt::BlockingQueuedConnection);
+    connect(ui->checkLogButton, SIGNAL(clicked()), this, SLOT(checkFaultLog_Slot()));
+    connect(ui->deleteLogButton,SIGNAL(clicked()), this, SLOT(deleteFaultLog_Slot()));
 
     connect(thread, SIGNAL(sendKeyDataSignal(unsigned char*)),  this,   SLOT(query_SetKeyTextSlot(unsigned char*)), Qt::BlockingQueuedConnection);
     connect(thread, SIGNAL(sendKeyQueryDataSignal(unsigned char*)), this,  SLOT(receive0x0AData_setText_Slot(unsigned char*)), Qt::BlockingQueuedConnection);
@@ -114,6 +128,26 @@ Widget::Widget(QWidget *parent) :
 
 Widget::~Widget()
 {
+//    QStringList input = ui->textEdit_4->toPlainText().split("\n");
+
+
+    if( ! inputFault.isEmpty() )
+    {
+        bool ok = faultfile->open( QIODevice::ReadWrite | QIODevice::Append );
+
+        qDebug() << ok;
+
+        if ( ok )
+        {
+            QTextStream out(faultfile);
+            foreach(QString s, inputFault) {
+                out << s;
+            }
+            faultfile->close();
+        }
+    }
+
+    delete faultfile;
     delete [] ram;
     delete [] image;
     delete timer;
@@ -122,6 +156,39 @@ Widget::~Widget()
     hid_close(myThread::handle);
     hid_exit();
     delete ui;
+}
+
+void Widget::setfaultLogTextEdit()
+{
+    QString lineStr;
+
+    /* 错误记录 */
+    ui->textEdit_4->setStyleSheet("background-color:transparent;");
+
+    ui->textEdit_4->setFontPointSize(20);
+    ui->textEdit_4->setTextColor(QColor("white"));
+
+    if ( faultfile->size() != 0 )
+    {
+        bool ok = faultfile->open( QIODevice::ReadWrite );
+
+        qDebug() << ok;
+
+        if ( ok )
+        {
+            QTextStream in(faultfile);
+            while ( !in.atEnd() )
+            {
+                lineStr = in.readLine();
+                if ( lineStr.left(10) == dateTime.currentDateTime().toString("yyyy-MM-dd") )
+                {
+                    ui->textEdit_4->append( lineStr );
+                }
+            }
+
+            faultfile->close();
+        }
+    }
 }
 
 void Widget::check_DeviceExist()
@@ -137,29 +204,15 @@ void Widget::check_DeviceExist()
     while (cur_dev)
     {
         if( cur_dev->vendor_id == 0x04B4 && cur_dev->product_id == 0x0201 )
-        {            
+        {
             devInfo = *cur_dev;
             kbdLite_isOk = true;
-//            ui->toolButton_kbdlite->setEnabled(true);
         }
         else
         {
             kbdLite_isOk = false;
         }
 
-//        qDebug() << " kbdLite ";
-        /* i作为一个计数，默认为USB设备超过两个即可判断鼠标键盘空白热键都存在 */
-//        i++;
-//        if( i >= 3 )
-//        {
-//            ui->toolButton_kbd->setEnabled(true);
-//            ui->toolButton_mouse->setEnabled(true);
-//        }
-//        else
-//        {
-//            ui->toolButton_kbd->setEnabled(false);
-//            ui->toolButton_mouse->setEnabled(false);
-//        }
         cur_dev = cur_dev->next;
     }
 
@@ -176,23 +229,43 @@ void Widget::changeLabelTime(const QString &Tim)
     ui->timeCnt->setText(Tim);
 }
 
-void Widget::changeLabelFalut(const QString &date)
+void Widget::changeLabelfault(const QString &date)
 {
     ui->errorCnt->setText(date);
 }
 
+void Widget::changeLableCircleDate(const QString &date)
+{
+    ui->circleCnt->setText(date);
+}
+
 void Widget::onTimeout()
 {
-    static int oldCnt = 0;
+    static int old_faultCnt = 0;
+    static int old_circleCnt = 0;
 
     *time = time->addSecs(1);
 
     emit changeTimeDate(time->toString("hh:mm:ss"));
 
-    if ( falut_Cnt != oldCnt )
+    if ( fault_Cnt != old_faultCnt )
     {
-        oldCnt = falut_Cnt;
-        emit changeFalutDate( QString::number(falut_Cnt) );
+        old_faultCnt = fault_Cnt;
+        emit changefaultDate( QString::number(fault_Cnt) );
+    }
+
+    if ( circle_Cnt != old_circleCnt )
+    {
+        old_circleCnt = circle_Cnt;
+        emit changeCircleDate( QString::number(circle_Cnt) );
+    }
+
+    if( !circTest_isOk )
+    {
+        foreach (QCheckBox *c, checkBoxs)
+        {
+            c->hide();
+        }
     }
 
 //    qDebug() << "123" << time->toString("hh:mm:ss");
@@ -212,22 +285,6 @@ void Widget::onTimeout()
 
 void Widget::getUsbPidVidSlot()
 {
-//    struct hid_device_info *devs, *cur_dev;
-
-//    devs = hid_enumerate(0x04B4, 0x0201);
-//    if( !devs )
-//    {
-//        ui->vidLineEdit->setText(" USB设备未插入或被占用 ");
-//        ui->pidLineEdit->setText(" USB设备未插入或被占用 ");
-//        ui->serLineEdit->setText(" USB设备未插入或被占用 ");
-//        return;
-//    }
-
-//    struct hid_device_info *devs, *cur_dev;
-
-//    devs = hid_enumerate(0x04B4, 0x0201);
-//    cur_dev = devs;
-
     unsigned short VID = devInfo.vendor_id;
     unsigned short PID = devInfo.product_id;
     wchar_t *Ser_Num = devInfo.serial_number;
@@ -235,8 +292,6 @@ void Widget::getUsbPidVidSlot()
     ui->vidLineEdit->setText("0x0" + QString::number(VID, 16));
     ui->pidLineEdit->setText("0x0" + QString::number(PID, 16));
     ui->serLineEdit->setText(QString::number(*Ser_Num));
-
-//    hid_free_enumeration(devs);
 }
 
 void Widget::receive0x0AData_setText_Slot(unsigned char *keyBuf)
@@ -299,7 +354,14 @@ void Widget::query_SetKeyTextSlot(unsigned char *KeyBuf)
 {
     if( KeyBuf == NULL )
     {
-        ui->keyTextEdit->append(" can not read the key data! ");
+        QMessageBox::warning(this, "warning Message", "USB设备未插入或被占用，通信出错");
+        kbdLite_isOk = false;
+        ui->testWidget->setCurrentIndex(0);
+        emit this->changeTestFlg(55);
+        ui->toolButton_ram->setProperty("current", "true");
+        ui->toolButton_ram->setStyleSheet("");     // 刷新按钮的样式
+        ui->toolButton_kbdlite->setProperty("current", "false");
+        ui->toolButton_kbdlite->setStyleSheet(""); // 刷新按钮的样式
         return;
     }
     else
@@ -316,12 +378,14 @@ void Widget::sleep(unsigned int msec)
     while(t.elapsed() < msec)
         QCoreApplication::processEvents();
 
+{
 #if 0
     QTime dieTime = QTime::currentTime().addMSecs(msec);
 
     while( QTime::currentTime() < dieTime )
         QCoreApplication::processEvents(QEventLoop::AllEvents, 20);
 #endif
+}
 }
 
 void Widget::initSeialPort()
@@ -381,7 +445,7 @@ void Widget::on_comboBox_currentIndexChanged(const QString &arg1)
     if(i != infos.size())
     {
         //can find
-        ui->uart_label->setText("串口打开成功");
+//        ui->uart_label->setText("串口打开成功");
         serial.close();
         serial.setPort(info);
         if( serial.open(QIODevice::ReadWrite) )          //读写打开
@@ -400,3 +464,16 @@ void Widget::on_comboBox_currentIndexChanged(const QString &arg1)
         ui->uart_label->setText("串口打开失败");
     }
 }
+
+void Widget::resizeEvent(QResizeEvent *event)
+{
+    int wd = window->width();
+    int ht = window->height();
+
+    window->move( (ui->testWidget->width() - wd) * 0.5, (ui->testWidget->height() - ht) * 0.4 );
+    window->resize(600, 500);
+}
+
+
+
+

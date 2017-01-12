@@ -69,6 +69,7 @@ public:
 private slots:
     void rotateOneStep();
 
+
 private:
     enum { NumRows = 2, NumColumns = 3 };
 
