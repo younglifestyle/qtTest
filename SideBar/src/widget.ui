@@ -883,7 +883,7 @@ QWidget {
       <string notr="true"/>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>8</number>
      </property>
      <property name="class" stdset="0">
       <string>tabWidget</string>

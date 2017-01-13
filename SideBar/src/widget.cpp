@@ -13,6 +13,8 @@ Widget::Widget(QWidget *parent) :
     /* 初始化一些按键 */
     initButtons();
 
+    clipboard = QApplication::clipboard();
+
     QThread *thread1 = new QThread;
 
     thread = new myThread(this);
@@ -110,6 +112,8 @@ Widget::Widget(QWidget *parent) :
     connect(thread, SIGNAL(sendKeyDataSignal(unsigned char*)),  this,   SLOT(query_SetKeyTextSlot(unsigned char*)), Qt::BlockingQueuedConnection);
     connect(thread, SIGNAL(sendKeyQueryDataSignal(unsigned char*)), this,  SLOT(receive0x0AData_setText_Slot(unsigned char*)), Qt::BlockingQueuedConnection);
 
+    connect(this->clipboard, SIGNAL(dataChanged()), this, SLOT(changePrintButton()));
+
     this->thread->start();
 
     time = new QTime(23, 59, 58, 0);
@@ -152,6 +156,11 @@ Widget::~Widget()
     hid_close(myThread::handle);
     hid_exit();
     delete ui;
+}
+
+void Widget::changePrintButton()
+{
+    ui->PrintScreenPushButton->setStyleSheet("background-color:rgb(112, 243, 255)");
 }
 
 void Widget::setfaultLogTextEdit()

@@ -20,6 +20,8 @@
 #include <QDateTime>
 #include <QDir>
 #include <QFileDialog>
+#include <QClipboard>
+
 #include "hidapi.h"
 
 #include "workthread.h"
@@ -50,6 +52,7 @@ public:
     QTimer *timer;
     QTime *time;
     QDateTime dateTime;
+    QClipboard *clipboard;
 
     struct hid_device_info devInfo;
 
@@ -68,6 +71,8 @@ public slots:
 private slots:
     void changeButtonStatus();
     void changePushButtonStatus();
+
+    void changePrintButton();
 
     void toolButton_Ram_clicked();
     void toolButton_Disk_clicked();
