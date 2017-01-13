@@ -131,7 +131,6 @@ void Widget::initButtons()
     }
 
     ui->toolButton_ram->setProperty("first", "true"); // 第一个按钮上面的边框不要.
-//    ui->toolButton_1->click(); // 第二个按钮被按下, 即设置它的current属性为true
 }
 
 void Widget::changePushButtonStatus()
@@ -175,57 +174,6 @@ void Widget::changeButtonStatus()
     source->setStyleSheet("");
 }
 
-void Widget::mousePressEvent(QMouseEvent *e)
-{
-    if( e->button() == Qt::LeftButton )
-    {
-        ui->leftButton->setProperty("current", "true");
-        ui->leftButton->setStyleSheet("");
-    }
-    else if( e->button() == Qt::MidButton )
-    {
-        ui->midButton->setProperty("current", "true");
-        ui->midButton->setStyleSheet("");
-    }
-    else if( e->button() == Qt::RightButton )
-    {
-        ui->rightButton->setProperty("current", "true");
-        ui->rightButton->setStyleSheet("");
-    }
-}
-
-void Widget::mouseReleaseEvent(QMouseEvent *e)
-{
-    if( e->button() == Qt::LeftButton )
-    {
-        ui->leftButton->setProperty("current", "false");
-        ui->leftButton->setStyleSheet("");
-    }
-    else if( e->button() == Qt::MidButton )
-    {
-        ui->midButton->setProperty("current", "false");
-        ui->midButton->setStyleSheet("");
-    }
-    else if( e->button() == Qt::RightButton )
-    {
-        ui->rightButton->setProperty("current", "false");
-        ui->rightButton->setStyleSheet("");
-    }
-}
-
-void Widget::mouseMoveEvent(QMouseEvent *e)
-{
-    ui->mousePos->setText(QString("move ：(%1, %2)").arg(e->globalX()).arg(e->globalY()));
-}
-
-void Widget::keyPressEvent(QKeyEvent *e)
-{
-    if( (e->modifiers() == Qt::ControlModifier) && (e->key() == Qt::Key_L) )
-    {
-        *time = time->addSecs(1800);
-    }
-}
-
 void Widget::toolButton_Ram_clicked()
 {
 
@@ -238,17 +186,22 @@ void Widget::toolButton_Ram_clicked()
 //    window->show();
 }
     /* 防止停止循环测试的功能 */
-    circTest_isOk = false;
+    myThread::circTest_isOk = false;
 
     /* 切换Tab至Tab1 */
     ui->testWidget->setCurrentIndex(0);
+    foreach (QCheckBox *c, checkBoxs)
+    {
+        c->hide();
+    }
 
     emit this->changeTestFlg(RAM_TEST);
 }
-
 void Widget::ram_test()
 {
     int i = 0;
+
+    ui->testWidget->setCurrentIndex(0);
 
     foreach (QPushButton *b, buttons_Ram)
     {
@@ -366,10 +319,14 @@ void Widget::ram_test()
 
 void Widget::toolButton_Disk_clicked()
 {
-    circTest_isOk = false;
+    myThread::circTest_isOk = false;
 
     /* 切换Tab至Tab2 */
     ui->testWidget->setCurrentIndex(1);
+    foreach (QCheckBox *c, checkBoxs)
+    {
+        c->hide();
+    }
 
     emit this->changeTestFlg(DISK_TEST);
 
@@ -390,6 +347,8 @@ void Widget::disk_test()
     int i = 0;
     QFile file( "1.txt" );
     QFile::remove("1.txt");
+
+    ui->testWidget->setCurrentIndex(1);
 
     foreach (QPushButton *b, buttons_Disk)
     {
@@ -687,15 +646,21 @@ void Widget::disk_test()
 
 void Widget::toolButton_Pic_clicked()
 {
-    circTest_isOk = false;
+    myThread::circTest_isOk = false;
 
     /* 切换Tab至Tab3 */
     ui->testWidget->setCurrentIndex(2);
+    foreach (QCheckBox *c, checkBoxs)
+    {
+        c->hide();
+    }
 
     emit this->changeTestFlg(PIC_TEST);
 }
 void Widget::toggle_Picture()
 {
+    ui->testWidget->setCurrentIndex(2);
+
     ui->label_4->show();
     if( ui->testWidget->currentIndex() == 2 )
     {
@@ -748,9 +713,13 @@ void Widget::toggle_Picture()
 
 void Widget::toolButton_Net_clicked()
 {
-    circTest_isOk = false;
+    myThread::circTest_isOk = false;
 
     ui->testWidget->setCurrentIndex(3);
+    foreach (QCheckBox *c, checkBoxs)
+    {
+        c->hide();
+    }
 
     emit this->changeTestFlg(NET_TEST);
 }
@@ -758,7 +727,8 @@ void Widget::net_test()
 {
     QString ip = "127.0.0.1";
     int exitCode;
-    int cnt = 0;
+
+    ui->testWidget->setCurrentIndex(3);
 
     ui->net_textEdit1->clear();
     ui->net_textEdit2->clear();
@@ -805,158 +775,259 @@ void Widget::net_test()
     /* strArg.arg("~~~~"), 可进行修改 */
     sleep(300);
 
-//    if(0 == exitCode)
-//    {
-//        //it's alive
-//        qDebug() << "shell ping " + ip + " sucessed!";
-//        ui->net_textEdit1->setText("来自 127.0.0.1 的回复: 字节=32 时间<1ms TTL=64");
+    if(0 == exitCode)
+    {
+        //it's alive
+        ui->net_textEdit1->setText("接收网卡数据：字节=32 时间<1ms TTL=64");
 
-//        sleep(500);
-//        if( ui->testWidget->currentIndex() == 3 )
-//        {
-//            ui->net_textEdit2->setText("来自 127.0.0.1 的回复: 字节=32 时间<1ms TTL=64");
-//        }
-//        else
-//        {
-//            return;
-//        }
+        sleep(500);
+        if( ui->testWidget->currentIndex() == 3 )
+        {
+            ui->net_textEdit2->setText("接收网卡数据：字节=32 时间<1ms TTL=64");
+        }
+        else
+        {
+            return;
+        }
 
-//        sleep(500);
-//        if( ui->testWidget->currentIndex() == 3 )
-//        {
-//            ui->net_textEdit2_2->setText("来自 127.0.0.1 的回复: 字节=32 时间<1ms TTL=64");
-//        }
-//        else
-//        {
-//            return;
-//        }
+        sleep(500);
+        if( ui->testWidget->currentIndex() == 3 )
+        {
+            ui->net_textEdit2_2->setText("接收网卡数据：字节=32 时间<1ms TTL=64");
+        }
+        else
+        {
+            return;
+        }
 
-//        sleep(500);
-//        if( ui->testWidget->currentIndex() == 3 )
-//        {
-//            ui->net_textEdit2_3->setText("来自 127.0.0.1 的回复: 字节=32 时间<1ms TTL=64");
-//        }
-//        else
-//        {
-//            return;
-//        }
+        sleep(500);
+        if( ui->testWidget->currentIndex() == 3 )
+        {
+            ui->net_textEdit2_3->setText("接收网卡数据：字节=32 时间<1ms TTL=64");
+        }
+        else
+        {
+            return;
+        }
 
-//        sleep(500);
-//        if( ui->testWidget->currentIndex() == 3 )
-//        {
-//            ui->net_textEdit2_4->setText("来自 127.0.0.1 的回复: 字节=32 时间<1ms TTL=64");
-//        }
-//        else
-//        {
-//            return;
-//        }
+        sleep(500);
+        if( ui->testWidget->currentIndex() == 3 )
+        {
+            ui->net_textEdit2_4->setText("接收网卡数据：字节=32 时间<1ms TTL=64");
+        }
+        else
+        {
+            return;
+        }
 
-//        sleep(500);
-//        if( ui->testWidget->currentIndex() == 3 )
-//        {
-//            ui->net_textEdit2_5->setText("来自 127.0.0.1 的回复: 字节=32 时间<1ms TTL=64");
-//        }
-//        else
-//        {
-//            return;
-//        }
-//    }
-//    else
-//    {
-//        ui->net_textEdit1->setText("请求超时");
-//    }
+        sleep(500);
+        if( ui->testWidget->currentIndex() == 3 )
+        {
+            ui->net_textEdit2_5->setText("接收网卡数据：字节=32 时间<1ms TTL=64");
+        }
+        else
+        {
+            return;
+        }
+    }
+    else
+    {
+        ui->net_textEdit1->setText("请求超时");
+    }
+    sleep(300);
 }
 
 
 void Widget::toolButton_Uart_clicked()
 {
-    circTest_isOk = false;
+    myThread::circTest_isOk = false;
 
     ui->testWidget->setCurrentIndex(4);
+    foreach (QCheckBox *c, checkBoxs)
+    {
+        c->hide();
+    }
 
     emit this->changeTestFlg(UART_TEST);
 }
 void Widget::uart_test()
 {
-    QString strText = "123abc";
+    QString strText = "abc";
     QByteArray ch = strText.toLatin1();
 
-    sleep(1000);
+    ui->testWidget->setCurrentIndex(4);
 
-    ui->textEdit_1->clear();
-    ui->textEdit_2->clear();
-    ui->textEdit_3->clear();
+    foreach ( QSerialPortInfo info, infos )
+    {
+        ui->textEdit_1->clear();
+        ui->textEdit_10->clear();
+        ui->textEdit_2->clear();
+        ui->textEdit_8->clear();
+        ui->textEdit_3->clear();
+        ui->textEdit_9->clear();
 
-    qDebug() << serial.write(ch);
+        sleep(500);
 
-    if( serial.write(ch) == -1 && ui->testWidget->currentIndex() == 4 )
-    {
-        fault_Cnt += 1;
-        ui->textEdit_1->setText("发送数据失败");
-        return;
-    }
-    else
-    {
-        ui->textEdit_1->setText("发送数据：" + strText + "  成功");
-    }
+        ui->comboBox->currentIndexChanged( info.portName() );
 
-    sleep(1000);
-    if( serial.write(ch) == -1 && ui->testWidget->currentIndex() == 4 )
-    {
-        fault_Cnt += 1;
-        ui->textEdit_2->setText("发送数据失败");
-        return;
-    }
-    else
-    {
-        ui->textEdit_2->setText("发送数据：" + strText + "  成功");
-    }
+        if ( ui->testWidget->currentIndex() == 4 )
+        {
+            if( serial.write(ch) == -1 )
+            {
+                fault_Cnt += 1;
+                ui->textEdit_1->setText("发送数据失败");
 
-    sleep(1000);
-    if( serial.write(ch) == -1 && ui->testWidget->currentIndex() == 4 )
-    {
-        fault_Cnt += 1;
-        ui->textEdit_3->setText("发送数据失败");
-        return;
-    }
-    else
-    {
-        ui->textEdit_3->setText("发送数据：" + strText + "  成功");
-    }
+                /* 将要写入log文件中的字符串 */
+                inputFault.append(dateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss ")
+                                  + tr("串口发送数据测试失败！"));
+                /* 将之显示到log TextEdit */
+                ui->textEdit_4->append(dateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss ")
+                                       + tr("串口发送数据测试失败！"));
+                return;
+            }
+            else
+            {
+                ui->textEdit_1->setText("发送数据：" + strText + " 成功");
+            }
+        }
+        else
+            return;
 
-    sleep(1000);
-    if( serial.write(ch) == -1 && ui->testWidget->currentIndex() == 4 )
-    {
-        fault_Cnt += 1;
-//        ui->textEdit_4->setText("发送数据失败");
-        return;
-    }
-    else
-    {
-//        ui->textEdit_4->setText("发送数据：" + strText + "  成功");
-    }
+        sleep(500);
 
-    sleep(1000);
-    if( serial.write(ch) == -1 && ui->testWidget->currentIndex() == 4 )
-    {
-        fault_Cnt += 1;
-//        ui->textEdit_5->setText("发送数据失败");
-        return;
-    }
-    else
-    {
-//        ui->textEdit_5->setText("发送数据：" + strText + "  成功");
+        if ( ui->testWidget->currentIndex() == 4 )
+        {
+            QByteArray temp = serial.readAll();
+
+            if( !temp.isEmpty() )
+            {
+                ui->textEdit_10->setText(tr("接收数据：") + temp + tr("成功"));
+            }
+            else
+            {
+                ui->textEdit_10->setText("接收数据失败");
+
+                fault_Cnt += 1;
+
+                /* 将要写入log文件中的字符串 */
+                inputFault.append(dateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss ")
+                                       + tr("串口接收数据测试失败！"));
+                /* 将之显示到log TextEdit */
+                ui->textEdit_4->append(dateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss ")
+                                       + tr("串口接收数据测试失败！"));
+            }
+        }
+        else
+            return;
+        sleep(500);
+
+        if ( ui->testWidget->currentIndex() == 4 )
+        {
+            if( serial.write(ch) == -1 )
+            {
+                ui->textEdit_2->setText("发送数据失败");
+
+                fault_Cnt += 1;
+                /* 将要写入log文件中的字符串 */
+                inputFault.append(dateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss ")
+                                  + tr("串口发送数据测试失败！"));
+                /* 将之显示到log TextEdit */
+                ui->textEdit_4->append(dateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss ")
+                                       + tr("串口发送数据测试失败！"));
+                return;
+            }
+            else
+            {
+                ui->textEdit_2->setText("发送数据：" + strText + " 成功");
+            }
+        }
+        else
+            return;
+
+        sleep(500);
+
+        if ( ui->testWidget->currentIndex() == 4 )
+        {
+            QByteArray temp = serial.readAll();
+
+            if( !temp.isEmpty() )
+            {
+                ui->textEdit_8->setText(tr("接收数据：") + temp + tr("成功"));
+            }
+            else
+            {
+                ui->textEdit_8->setText("接收数据失败");
+
+                fault_Cnt += 1;
+                /* 将要写入log文件中的字符串 */
+                inputFault.append(dateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss ")
+                                       + tr("串口接收数据测试失败！"));
+                /* 将之显示到log TextEdit */
+                ui->textEdit_4->append(dateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss ")
+                                       + tr("串口接收数据测试失败！"));
+            }
+        }
+        else
+            return;
+        sleep(500);
+
+        if ( ui->testWidget->currentIndex() == 4 )
+        {
+            if( serial.write(ch) == -1 )
+            {
+                ui->textEdit_3->setText("发送数据失败");
+
+                fault_Cnt += 1;
+                /* 将要写入log文件中的字符串 */
+                inputFault.append(dateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss ")
+                                  + tr("串口发送数据测试失败！"));
+                /* 将之显示到log TextEdit */
+                ui->textEdit_4->append(dateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss ")
+                                       + tr("串口发送数据测试失败！"));
+                return;
+            }
+            else
+            {
+                ui->textEdit_3->setText("发送数据：" + strText + " 成功");
+            }
+        }
+        else
+            return;
+        sleep(500);
+
+        if ( ui->testWidget->currentIndex() == 4 )
+        {
+            QByteArray temp = serial.readAll();
+
+            if( !temp.isEmpty() )
+            {
+                ui->textEdit_9->setText(tr("接收数据：") + temp + tr("成功"));
+            }
+            else
+            {
+                ui->textEdit_9->setText("接收数据失败");
+
+                fault_Cnt += 1;
+                /* 将要写入log文件中的字符串 */
+                inputFault.append(dateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss ")
+                                       + tr("串口接收数据测试失败！"));
+                /* 将之显示到log TextEdit */
+                ui->textEdit_4->append(dateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss ")
+                                       + tr("串口接收数据测试失败！"));
+            }
+        }
+        else
+            return;
+        sleep(500);
     }
 
     sleep(700);
-
-    ui->comboBox->currentIndexChanged(ui->comboBox->currentText());
 }
 
 
 void Widget::toolButton_Mouse_clicked()
 {
-    circTest_isOk = false;
+    myThread::circTest_isOk = false;
 
     ui->testWidget->setCurrentIndex(6);
 
@@ -966,7 +1037,7 @@ void Widget::toolButton_Mouse_clicked()
 void Widget::toolButton_BLANKBD_clicked()
 {
     struct hid_device_info *devs;
-    circTest_isOk = false;
+    myThread::circTest_isOk = false;
 
     /* 清除测试界面已有文字 */
     keyCodeClearSlot();
@@ -974,6 +1045,9 @@ void Widget::toolButton_BLANKBD_clicked()
     ui->pidLineEdit->clear();
     ui->vidLineEdit->clear();
     ui->serLineEdit->clear();
+
+    /* 首先停止其他测试项目 */
+    emit this->changeTestFlg(MOUS_TEST);
 
     if( kbdLite_isOk == true )
     {
@@ -1006,9 +1080,23 @@ void Widget::toolButton_BLANKBD_clicked()
     }
 }
 
+void Widget::toolButton_KBD_clicked()
+{
+    myThread::circTest_isOk = false;
+    foreach (QCheckBox *c, checkBoxs)
+    {
+        c->hide();
+    }
+
+    ui->testWidget->setCurrentIndex(8);
+
+    /* 停止其他测试 */
+    emit this->changeTestFlg(MOUS_TEST);
+}
+
 void Widget::circleButton_clicked()
 {
-    circTest_isOk = true;
+    myThread::circTest_isOk = true;
 
     foreach (QCheckBox *c, checkBoxs)
     {
@@ -1026,89 +1114,28 @@ void Widget::checkBox_stateChanged(int state)
     {
         if( c->isChecked() == true )
         {
-            check_FlgTS |= checkBox_TestFlg[i];
+            myThread::checkBox_TestFlg[i] = true;
         }
         else
         {
-            check_FlgTS &= checkBox_TestFlg[i];
+            myThread::checkBox_TestFlg[i] = false;
         }
         i++;
     }
 }
 
-void Widget::circ_test()
-{    
-    qDebug() << "213" <<check_FlgTS;
-
-    if ( circTest_isOk )
-    {
-        if( (check_FlgTS & checkBox_TestFlg[0]) == RAM )
-        {
-            ui->testWidget->setCurrentIndex(0);
-            ram_test();
-            qDebug() << "++" << (check_FlgTS & (~checkBox_TestFlg[0]));
-        }
-    }
-    else
-        return;
-
-    if ( circTest_isOk )
-    {
-        if( (check_FlgTS & checkBox_TestFlg[1]) == DISK )
-        {
-            ui->testWidget->setCurrentIndex(1);
-            disk_test();
-            qDebug() << "2";
-        }
-    }
-    else
-        return;
-
-    if ( circTest_isOk )
-    {
-        if( (check_FlgTS & checkBox_TestFlg[2]) == PIC )
-        {
-            ui->testWidget->setCurrentIndex(2);
-            toggle_Picture();
-            qDebug() << "3";
-        }
-    }
-    else
-        return;
-
-    if ( circTest_isOk )
-    {
-        if( (check_FlgTS & checkBox_TestFlg[3]) == NET )
-        {
-            ui->testWidget->setCurrentIndex(3);
-            net_test();
-            qDebug() << "4";
-        }
-    }
-    else
-        return;
-
-    if ( circTest_isOk )
-    {
-        if( (check_FlgTS & checkBox_TestFlg[4]) == UART )
-        {
-            ui->testWidget->setCurrentIndex(4);
-            uart_test();
-            qDebug() << "5";
-        }
-    }
-    else
-        return;
-
-    circle_Cnt++;
-}
-
-
 void Widget::checkFaultLog_Slot()
 {
-    circTest_isOk = false;
+    myThread::circTest_isOk = false;
+    foreach (QCheckBox *c, checkBoxs)
+    {
+        c->hide();
+    }
 
     ui->testWidget->setCurrentIndex(7);
+
+    /* 停止其他测试 */
+    emit this->changeTestFlg(MOUS_TEST);
 }
 
 void Widget::deleteFaultLog_Slot()

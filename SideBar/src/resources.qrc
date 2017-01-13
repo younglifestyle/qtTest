@@ -22,6 +22,6 @@
         <file>resources/title.ico</file>
         <file>resources/title1.png</file>
         <file>resources/title2.png</file>
-        <file>resources/config.txt</file>
+        <file>resources/keyboard1.png</file>
     </qresource>
 </RCC>

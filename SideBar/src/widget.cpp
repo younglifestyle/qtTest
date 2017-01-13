@@ -5,12 +5,11 @@ Widget::Widget(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Widget),
     fault_Cnt(0),
-    circle_Cnt(0),
-    checkBox_TestFlg(0),
     ram(new int[40])
 {
     ui->setupUi(this);
 
+    setFocus();
     /* 初始化一些按键 */
     initButtons();
 
@@ -45,7 +44,7 @@ Widget::Widget(QWidget *parent) :
 //    ui->label_local_ip->setText(localIP);
 
     /* 隐藏掉Tab */
-//    ui->testWidget->tabBar()->hide();
+    ui->testWidget->tabBar()->hide();
 
     /* 先暂时在程序启动时显示第一个测试界面，后面可以直接hide testUI */
     ui->testWidget->setCurrentIndex(0);
@@ -85,7 +84,7 @@ Widget::Widget(QWidget *parent) :
     connect(ui->toolButton_uart,    SIGNAL(clicked()), this,  SLOT(toolButton_Uart_clicked()));
     connect(ui->toolButton_mouse,   SIGNAL(clicked()), this,  SLOT(toolButton_Mouse_clicked()));
     connect(ui->toolButton_kbdlite, SIGNAL(clicked()), this,  SLOT(toolButton_BLANKBD_clicked()));
-    connect(ui->exitButton,         SIGNAL(clicked()), qApp,  SLOT(quit()));
+    connect(ui->toolButton_kbd,     SIGNAL(clicked()), this,  SLOT(toolButton_KBD_clicked()));
 
     connect(ui->circleButton,       SIGNAL(clicked()), this,  SLOT(circleButton_clicked()));
 
@@ -105,7 +104,6 @@ Widget::Widget(QWidget *parent) :
     connect(thread, SIGNAL(netSignal()),  this, SLOT(net_test()),       Qt::BlockingQueuedConnection);
     connect(thread, SIGNAL(uartSignal()), this, SLOT(uart_test()),      Qt::BlockingQueuedConnection);
 
-    connect(thread, SIGNAL(circSignal()), this, SLOT(circ_test()),      Qt::BlockingQueuedConnection);
     connect(ui->checkLogButton, SIGNAL(clicked()), this, SLOT(checkFaultLog_Slot()));
     connect(ui->deleteLogButton,SIGNAL(clicked()), this, SLOT(deleteFaultLog_Slot()));
 
@@ -114,7 +112,7 @@ Widget::Widget(QWidget *parent) :
 
     this->thread->start();
 
-    time = new QTime(0, 0, 0, 0);
+    time = new QTime(23, 59, 58, 0);
 //    time->start();                            /* 功能仅为：Sets this time to the current time */
 
     timer = new QTimer(0);
@@ -130,18 +128,16 @@ Widget::~Widget()
 {
 //    QStringList input = ui->textEdit_4->toPlainText().split("\n");
 
-
     if( ! inputFault.isEmpty() )
     {
-        bool ok = faultfile->open( QIODevice::ReadWrite | QIODevice::Append );
-
-        qDebug() << ok;
+        bool ok = faultfile->open( QIODevice::ReadWrite | QIODevice::Text | QIODevice::Append );
 
         if ( ok )
         {
             QTextStream out(faultfile);
-            foreach(QString s, inputFault) {
-                out << s;
+            foreach(QString s, inputFault)
+            {
+                out << s << endl;
             }
             faultfile->close();
         }
@@ -150,7 +146,7 @@ Widget::~Widget()
     delete faultfile;
     delete [] ram;
     delete [] image;
-    delete timer;
+//    delete timer;    /* 已经被移动到另外一个线程，无法在主线程进行关闭 */
     delete time;
 
     hid_close(myThread::handle);
@@ -167,6 +163,13 @@ void Widget::setfaultLogTextEdit()
 
     ui->textEdit_4->setFontPointSize(20);
     ui->textEdit_4->setTextColor(QColor("white"));
+
+    /* 不存在即创建 */
+    if ( !faultfile->exists() )
+    {
+        faultfile->open( QIODevice::ReadWrite );
+        faultfile->close();
+    }
 
     if ( faultfile->size() != 0 )
     {
@@ -241,12 +244,39 @@ void Widget::changeLableCircleDate(const QString &date)
 
 void Widget::onTimeout()
 {
+    /*
+     * timer这个类所生活的进程是在次线程中的，无法在主线程之外去操作任何界面控件
+     *
+    */
     static int old_faultCnt = 0;
     static int old_circleCnt = 0;
+    static int timeCnt = 0;
+    static int dateOne = 0;
+
+    timeCnt++;
+    if( timeCnt >= 5 )
+    {
+        timeCnt = 0;
+        infos = QSerialPortInfo::availablePorts();
+    }
 
     *time = time->addSecs(1);
-
-    emit changeTimeDate(time->toString("hh:mm:ss"));
+    if ( time->toString("hh:mm:ss") != "23:59:59" )
+    {
+        if ( dateOne == 0 )
+        {
+            emit changeTimeDate(time->toString("hh:mm:ss"));
+        }
+        else
+        {
+            emit changeTimeDate("0" + QString::number(dateOne) + " " + time->toString("hh:mm:ss"));
+        }
+    }
+    else
+    {
+        dateOne += 1;
+        emit changeTimeDate("0" + QString::number(dateOne) + " " + time->toString("hh:mm:ss"));
+    }
 
     if ( fault_Cnt != old_faultCnt )
     {
@@ -254,19 +284,20 @@ void Widget::onTimeout()
         emit changefaultDate( QString::number(fault_Cnt) );
     }
 
-    if ( circle_Cnt != old_circleCnt )
+    if ( myThread::circle_Cnt != old_circleCnt )
     {
-        old_circleCnt = circle_Cnt;
-        emit changeCircleDate( QString::number(circle_Cnt) );
+        old_circleCnt = myThread::circle_Cnt;
+        emit changeCircleDate( QString::number(myThread::circle_Cnt) );
     }
 
-    if( !circTest_isOk )
-    {
-        foreach (QCheckBox *c, checkBoxs)
-        {
-            c->hide();
-        }
-    }
+    /* 不进行循环测试 */
+//    if( myThread::circTest_isOk == false )
+//    {
+//        foreach (QCheckBox *c, checkBoxs)
+//        {
+//            c->hide();
+//        }
+//    }
 
 //    qDebug() << "123" << time->toString("hh:mm:ss");
 
@@ -391,16 +422,61 @@ void Widget::sleep(unsigned int msec)
 void Widget::initSeialPort()
 {
     //获取计算机上所有串口并添加到comboBox中
-    QList<QSerialPortInfo> infos = QSerialPortInfo::availablePorts();
-    if(infos.isEmpty())
+    infos = QSerialPortInfo::availablePorts();
+//    if(infos.isEmpty())
+//    {
+//        ui->comboBox->addItem("无串口");
+//        return;
+//    }
+//    foreach (QSerialPortInfo info, infos)
+//    {
+//        ui->comboBox->addItem(info.portName());
+//        //qDebug() << info.portName();
+//    }
+}
+
+void Widget::on_comboBox_currentIndexChanged(const QString &arg1)
+{
+    QSerialPortInfo info;
+    int i = 0;
+
+    /* 扫到最后一个，则停止扫描 */
+    foreach(info, infos)
     {
-        ui->comboBox->addItem("无串口");
-        return;
+        if(info.portName() == arg1)
+            break;
+        i++;
     }
-    foreach (QSerialPortInfo info, infos)
+
+//    qDebug() << info.portName();
+//    qDebug() << infos.size();
+//    qDebug() << i;
+
+    if(i != infos.size())
     {
-        ui->comboBox->addItem(info.portName());
-        //qDebug() << info.portName();
+        //can find
+        serial.close();
+        serial.setPort(info);
+        if( serial.open(QIODevice::ReadWrite) )                   //读写打开
+        {
+            ui->uart_label->setText(info.portName() + "打开成功");
+        }
+        else
+        {
+            ui->uart_label->setText(info.portName() + "打开失败");
+            infos = QSerialPortInfo::availablePorts();
+            return;
+        }
+        serial.setBaudRate(QSerialPort::Baud115200);  //波特率
+        serial.setDataBits(QSerialPort::Data8);     //数据位
+        serial.setParity(QSerialPort::NoParity);    //无奇偶校验
+        serial.setStopBits(QSerialPort::OneStop);   //一停止位
+        serial.setFlowControl(QSerialPort::NoFlowControl);  //无控制
+    }
+    else
+    {
+        serial.close();
+        ui->uart_label->setText("串口打开失败");
     }
 }
 
@@ -425,44 +501,6 @@ QString Widget::get_localmachine_ip()
         ipAddress = QHostAddress(QHostAddress::LocalHost).toString();
 
     return ipAddress;
-}
-
-void Widget::on_comboBox_currentIndexChanged(const QString &arg1)
-{
-    QSerialPortInfo info;
-    QList<QSerialPortInfo> infos = QSerialPortInfo::availablePorts();
-    int i = 0;
-    foreach(info, infos)
-    {
-        if(info.portName() == arg1)
-            break;
-        i++;
-    }
-
-//    qDebug() << info.portName();
-//    qDebug() << infos.size();
-
-    if(i != infos.size())
-    {
-        //can find
-//        ui->uart_label->setText("串口打开成功");
-        serial.close();
-        serial.setPort(info);
-        if( serial.open(QIODevice::ReadWrite) )          //读写打开
-            ui->uart_label->setText("串口打开成功");
-        else
-            ui->uart_label->setText("串口打开失败");
-        serial.setBaudRate(QSerialPort::Baud115200);  //波特率
-        serial.setDataBits(QSerialPort::Data8);     //数据位
-        serial.setParity(QSerialPort::NoParity);    //无奇偶校验
-        serial.setStopBits(QSerialPort::OneStop);   //一停止位
-        serial.setFlowControl(QSerialPort::NoFlowControl);  //无控制
-    }
-    else
-    {
-        serial.close();
-        ui->uart_label->setText("串口打开失败");
-    }
 }
 
 void Widget::resizeEvent(QResizeEvent *event)

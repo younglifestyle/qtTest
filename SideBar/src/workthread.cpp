@@ -4,13 +4,15 @@
 
 hid_device * myThread::handle = NULL;
 bool myThread::KeyQuery_0A = false;
+bool myThread::circTest_isOk = false;
+int myThread::checkBox_TestFlg[5] = {0};
+int myThread::circle_Cnt = 0;
 
 myThread::myThread(QObject *parent) :
     QThread(parent)
 {
     stopped = false;
     flg = 16;
-
 }
 
 void myThread::run()
@@ -19,48 +21,77 @@ void myThread::run()
     unsigned char buf1[17];
     unsigned char buf2[8];
 
-//    handle = hid_open(0x04B4, 0x0201, NULL);
-//    if( !handle )
-//    {
-//        qDebug()<<"Unable to open device";
-////        return;
-//    }
-
     while( !stopped )
     {
         /* we call test code */
         switch (flg)
         {
             case RAM_TEST:
-//                qDebug() <<" is ram_test ";
                 emit this->ramSignal();
                 break;
 
             case DISK_TEST:
-//                qDebug() <<" is DISK_TEST ";
                 emit this->diskSignal();
                 break;
 
             case PIC_TEST:
-//                qDebug() <<" is PIC_TEST ";
                 emit this->picSignal();
                 break;
 
             case NET_TEST:
-//                qDebug() <<" is NET_TEST ";
                 emit this->netSignal();
                 break;
 
             case UART_TEST:
-//                qDebug() <<" is NET_TEST ";
                 emit this->uartSignal();
                 break;
 
             case CIRC_TEST:
-                emit this->circSignal();
+                if ( circTest_isOk )
+                {
+                    if ( checkBox_TestFlg[0] == true )
+                    {
+                        emit this->ramSignal();
+                    }
+                }
+
+                if ( circTest_isOk )
+                {
+                    if ( checkBox_TestFlg[1] == true )
+                    {
+                        emit this->diskSignal();
+                    }
+                }
+
+                if ( circTest_isOk )
+                {
+                    if ( checkBox_TestFlg[2] == true )
+                    {
+                        emit this->picSignal();
+                    }
+                }
+
+                if ( circTest_isOk )
+                {
+                    if ( checkBox_TestFlg[3] == true )
+                    {
+                        emit this->netSignal();
+                    }
+                }
+
+                if ( circTest_isOk )
+                {
+                    if ( checkBox_TestFlg[4] == true )
+                    {
+                        emit this->uartSignal();
+                    }
+                }
+
+                circle_Cnt += 1;
                 break;
 
             case MOUS_TEST:
+                /* 不需要线程协助 */
                 break;
 
             case BLANK_TEST:
@@ -68,7 +99,7 @@ void myThread::run()
                 memset(buf1, 0, sizeof(buf1));
 
                 res = hid_read_timeout(handle, buf2, 8, 60);
-                if(res == -1)
+                if ( res == -1 )
                 {
                     qDebug()<<"read is failed!";
                     emit sendKeyDataSignal(NULL);
@@ -110,8 +141,7 @@ void myThread::run()
 
     stopped = false;   /* 为了下一次启动线程，重设标志位 */
 
-    /* exec()执行后即是执行线程事件循环，控制权交给系统，但不会循环run */
-    //    exec();
+    /* exec()执行后即是执行线程事件循环，控制权交给系统，但不会循环run exec();*/
 }
 
 /* 连接主线程的signals */

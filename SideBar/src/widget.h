@@ -43,9 +43,10 @@ public:
     void initSeialPort();
     void check_DeviceExist();
     void setfaultLogTextEdit();
-    void resizeEvent(QResizeEvent* event);
+    void resizeEvent(QResizeEvent *event);
 
-    QSerialPort serial;//串口实例
+    QList<QSerialPortInfo> infos;   // 保存计算机上所有的串口信息
+    QSerialPort serial;             // 串口实例
     QTimer *timer;
     QTime *time;
     QDateTime dateTime;
@@ -75,6 +76,7 @@ private slots:
     void toolButton_Uart_clicked();
     void toolButton_Mouse_clicked();
     void toolButton_BLANKBD_clicked();
+    void toolButton_KBD_clicked();
     void circleButton_clicked();
     void checkFaultLog_Slot();
     void deleteFaultLog_Slot();
@@ -95,7 +97,6 @@ private slots:
     void disk_test();
     void net_test();
     void uart_test();
-    void circ_test();
 
     void query_SetKeyTextSlot(unsigned char *KeyBuf);
 
@@ -111,7 +112,11 @@ protected:
     //鼠标松开事件
     void mouseReleaseEvent(QMouseEvent *);
     //按键按下事件
-    void keyPressEvent(QKeyEvent *e);
+    void keyPressEvent(QKeyEvent *k);
+
+    void keyReleaseEvent(QKeyEvent *e);
+
+    bool event(QEvent *event);
 
 private:
     enum { RAM_CNT = 40, DISK_CNT = 48 };
@@ -128,10 +133,6 @@ private:
 
     QFile *faultfile;
     int fault_Cnt;
-    int circle_Cnt;
-
-    int checkBox_TestFlg[5];
-    int check_FlgTS;
 
     QImage *image;
     QPixmap *pixmap;

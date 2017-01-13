@@ -14,7 +14,10 @@ public:
     void stop();
 
     static hid_device *handle;
+    static bool circTest_isOk;
     static bool KeyQuery_0A;
+    static int checkBox_TestFlg[5];
+    static int circle_Cnt;
 
 signals:
     void ramSignal();
@@ -22,8 +25,6 @@ signals:
     void picSignal();
     void netSignal();
     void uartSignal();
-
-    void circSignal();
 
     void sendKeyDataSignal(unsigned char *KeyBuf);
     void sendKeyQueryDataSignal(unsigned char *keyBuf);

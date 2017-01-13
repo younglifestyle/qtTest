@@ -22,7 +22,8 @@ SOURCES += main.cpp \
     workthread.cpp \
     glwidget.cpp \
     window.cpp \
-    toolbutton_and_task.cpp
+    toolbutton_and_task.cpp \
+    keyMouseMotion.cpp
 
 HEADERS  += \
     widget.h \
