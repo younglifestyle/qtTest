@@ -16,6 +16,7 @@ public:
     static hid_device *handle;
     static bool circTest_isOk;
     static bool KeyQuery_0A;
+    static bool uart_Flg;
     static int checkBox_TestFlg[5];
     static int circle_Cnt;
 

@@ -55,6 +55,7 @@ public:
     QClipboard *clipboard;
 
     struct hid_device_info devInfo;
+    static QPoint pos;
 
     bool circTest_isOk;
     bool kbdLite_isOk;

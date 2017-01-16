@@ -41,7 +41,7 @@ void Widget::mouseReleaseEvent(QMouseEvent *e)
 
 void Widget::mouseMoveEvent(QMouseEvent *e)
 {
-    ui->mousePos->setText(QString("move ：(%1, %2)").arg(e->globalX()).arg(e->globalY()));
+    ui->mousePos->setText(QString("(%1, %2)").arg(e->globalX()).arg(e->globalY()));
 }
 
 void Widget::keyPressEvent(QKeyEvent *k)
@@ -467,6 +467,23 @@ void Widget::keyReleaseEvent(QKeyEvent *e)
 
 bool Widget::event(QEvent *event)
 {
+    QPoint pos1 = QCursor::pos();
+    static int i = 0;
+    i++;
+
+    /*
+     * 不能在程序一开始时就调用 ui->mousePos->setText(QString("(%1, %2)").arg(pos.x()).arg(pos.y()));
+     * 猜测：因为UI界面未建立，此时传送字符串将引发内存泄露的危害，造成程序卡死。
+    */
+    if( i > 20 )
+    {
+        if( pos != pos1 && ui->testWidget->currentIndex() == 6 )
+        {
+            ui->mousePos->setText(QString("(%1, %2)").arg(pos.x()).arg(pos.y()));
+            pos = pos1;
+        }
+    }
+
     if( event->type() == QEvent::KeyPress )
     {
         QKeyEvent *ke=static_cast<QKeyEvent*>(event);//转化为键盘事件

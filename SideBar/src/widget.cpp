@@ -1,6 +1,8 @@
 #include "widget.h"
 #include "ui_widget.h"
 
+QPoint Widget::pos = QCursor::pos();
+
 Widget::Widget(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Widget),
@@ -59,7 +61,11 @@ Widget::Widget(QWidget *parent) :
     ui->leftButton->setEnabled(false);
     ui->rightButton->setEnabled(false);
     ui->midButton->setEnabled(false);
-    setMouseTracking(true);
+
+    /* 键盘测试，设置按钮不可用可以让焦点保持在界面，消除BUG */
+    ui->EscPushButton->setEnabled(false);
+
+    ui->testWidget->setMouseTracking(true);
 
     /* 不让界面开始时跳那么一下 */
     ui->timeCnt->setText("00:00:00");
@@ -116,7 +122,7 @@ Widget::Widget(QWidget *parent) :
 
     this->thread->start();
 
-    time = new QTime(23, 59, 58, 0);
+    time = new QTime(0, 0, 0, 0);
 //    time->start();                            /* 功能仅为：Sets this time to the current time */
 
     timer = new QTimer(0);
@@ -132,6 +138,7 @@ Widget::~Widget()
 {
 //    QStringList input = ui->textEdit_4->toPlainText().split("\n");
 
+    /* 在退出整个程序时，将错误记录写入文件中保存 */
     if( ! inputFault.isEmpty() )
     {
         bool ok = faultfile->open( QIODevice::ReadWrite | QIODevice::Text | QIODevice::Append );
@@ -161,6 +168,8 @@ Widget::~Widget()
 void Widget::changePrintButton()
 {
     ui->PrintScreenPushButton->setStyleSheet("background-color:rgb(112, 243, 255)");
+    sleep(60);
+    ui->PrintScreenPushButton->setStyleSheet("");
 }
 
 void Widget::setfaultLogTextEdit()
@@ -173,10 +182,12 @@ void Widget::setfaultLogTextEdit()
     ui->textEdit_4->setFontPointSize(20);
     ui->textEdit_4->setTextColor(QColor("white"));
 
+//    qDebug() << faultfile->exists();
+
     /* 不存在即创建 */
     if ( !faultfile->exists() )
     {
-        faultfile->open( QIODevice::ReadWrite );
+        faultfile->open( QIODevice::WriteOnly );
         faultfile->close();
     }
 
@@ -255,7 +266,6 @@ void Widget::onTimeout()
 {
     /*
      * timer这个类所生活的进程是在次线程中的，无法在主线程之外去操作任何界面控件
-     *
     */
     static int old_faultCnt = 0;
     static int old_circleCnt = 0;
@@ -267,6 +277,10 @@ void Widget::onTimeout()
     {
         timeCnt = 0;
         infos = QSerialPortInfo::availablePorts();
+        if( ! infos.isEmpty() )
+        {
+            myThread::uart_Flg = true;
+        }
     }
 
     *time = time->addSecs(1);
@@ -299,15 +313,6 @@ void Widget::onTimeout()
         emit changeCircleDate( QString::number(myThread::circle_Cnt) );
     }
 
-    /* 不进行循环测试 */
-//    if( myThread::circTest_isOk == false )
-//    {
-//        foreach (QCheckBox *c, checkBoxs)
-//        {
-//            c->hide();
-//        }
-//    }
-
 //    qDebug() << "123" << time->toString("hh:mm:ss");
 
 //    time->restart();
@@ -327,11 +332,9 @@ void Widget::getUsbPidVidSlot()
 {
     unsigned short VID = devInfo.vendor_id;
     unsigned short PID = devInfo.product_id;
-    wchar_t *Ser_Num = devInfo.serial_number;
 
     ui->vidLineEdit->setText("0x0" + QString::number(VID, 16));
     ui->pidLineEdit->setText("0x0" + QString::number(PID, 16));
-    ui->serLineEdit->setText(QString::number(*Ser_Num));
 }
 
 void Widget::receive0x0AData_setText_Slot(unsigned char *keyBuf)
@@ -432,6 +435,14 @@ void Widget::initSeialPort()
 {
     //获取计算机上所有串口并添加到comboBox中
     infos = QSerialPortInfo::availablePorts();
+
+    if ( infos.isEmpty() )
+    {
+        ui->uart_label->setText( tr("无串口") );
+        myThread::uart_Flg = false;
+        return;
+    }
+
 //    if(infos.isEmpty())
 //    {
 //        ui->comboBox->addItem("无串口");

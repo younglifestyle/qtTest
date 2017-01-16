@@ -5,6 +5,7 @@
 hid_device * myThread::handle = NULL;
 bool myThread::KeyQuery_0A = false;
 bool myThread::circTest_isOk = false;
+bool myThread::uart_Flg = true;
 int myThread::checkBox_TestFlg[5] = {0};
 int myThread::circle_Cnt = 0;
 
@@ -81,7 +82,7 @@ void myThread::run()
 
                 if ( circTest_isOk )
                 {
-                    if ( checkBox_TestFlg[4] == true )
+                    if ( checkBox_TestFlg[4] == true && uart_Flg == true )
                     {
                         emit this->uartSignal();
                     }

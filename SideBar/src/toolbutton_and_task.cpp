@@ -3,6 +3,9 @@
 
 void Widget::initButtons()
 {
+//    QList<QPushButton *> kdbButtons;
+
+
     // 把按钮放在一个list里为了方便管理
     {
         buttons_Ram.append(ui->pushButton1);
@@ -106,6 +109,7 @@ void Widget::initButtons()
     buttons.append(ui->toolButton_ram);
     buttons.append(ui->toolButton_uart);
 
+    /* 5个勾选框，分别对应于五个测试项 */
     checkBoxs.append(ui->checkBox1);
     checkBoxs.append(ui->checkBox2);
     checkBoxs.append(ui->checkBox3);
@@ -120,11 +124,13 @@ void Widget::initButtons()
     ui_RightButtons.append(ui->checkLogButton);
     ui_RightButtons.append(ui->deleteLogButton);
 
+    /* 左边功能按键 */
     foreach (QToolButton *b, buttons)
     {
         connect(b, SIGNAL(clicked()), this, SLOT(changeButtonStatus()));    /* 连接信号signal */
     }
 
+    /* 右边的PushButton */
     foreach (QPushButton *a, ui_RightButtons)
     {
         connect(a, SIGNAL(clicked()), this, SLOT(changePushButtonStatus()));    /* 连接信号signal */
@@ -706,8 +712,6 @@ void Widget::toggle_Picture()
     {
         return;
     }
-
-//    ui->label_4->hide();
 }
 
 
@@ -743,7 +747,7 @@ void Widget::net_test()
         QString strArg = "ping " + ip + " -n 1 -i 2";
         exitCode = QProcess::execute(strArg);
 
-    {
+{
 #if 0
         QString strArg = "netsh interface ip set address \"本地连接";
         QString strArg1 = " %1\" static 192.168.0.10 255.255.255.0 192.168.0.1";
@@ -780,9 +784,9 @@ void Widget::net_test()
         //it's alive
         ui->net_textEdit1->setText("接收网卡数据：字节=32 时间<1ms TTL=64");
 
-        sleep(500);
         if( ui->testWidget->currentIndex() == 3 )
         {
+            sleep(600);
             ui->net_textEdit2->setText("接收网卡数据：字节=32 时间<1ms TTL=64");
         }
         else
@@ -790,9 +794,9 @@ void Widget::net_test()
             return;
         }
 
-        sleep(500);
         if( ui->testWidget->currentIndex() == 3 )
         {
+            sleep(600);
             ui->net_textEdit2_2->setText("接收网卡数据：字节=32 时间<1ms TTL=64");
         }
         else
@@ -800,9 +804,9 @@ void Widget::net_test()
             return;
         }
 
-        sleep(500);
         if( ui->testWidget->currentIndex() == 3 )
         {
+            sleep(600);
             ui->net_textEdit2_3->setText("接收网卡数据：字节=32 时间<1ms TTL=64");
         }
         else
@@ -810,9 +814,9 @@ void Widget::net_test()
             return;
         }
 
-        sleep(500);
         if( ui->testWidget->currentIndex() == 3 )
         {
+            sleep(600);
             ui->net_textEdit2_4->setText("接收网卡数据：字节=32 时间<1ms TTL=64");
         }
         else
@@ -820,9 +824,9 @@ void Widget::net_test()
             return;
         }
 
-        sleep(500);
         if( ui->testWidget->currentIndex() == 3 )
         {
+            sleep(600);
             ui->net_textEdit2_5->setText("接收网卡数据：字节=32 时间<1ms TTL=64");
         }
         else
@@ -841,6 +845,20 @@ void Widget::net_test()
 void Widget::toolButton_Uart_clicked()
 {
     myThread::circTest_isOk = false;
+
+    if( infos.isEmpty() )
+    {
+        QMessageBox::warning(this, "warning Message", "无串口设备");
+        ui->testWidget->setCurrentIndex(0);
+        emit this->changeTestFlg(55);
+
+        ui->toolButton_ram->setProperty("current", "true");
+        ui->toolButton_ram->setStyleSheet("");     // 刷新按钮的样式
+        ui->toolButton_uart->setProperty("current", "false");
+        ui->toolButton_uart->setStyleSheet("");    // 刷新按钮的样式
+
+        return;
+    }
 
     ui->testWidget->setCurrentIndex(4);
     foreach (QCheckBox *c, checkBoxs)
@@ -1044,7 +1062,6 @@ void Widget::toolButton_BLANKBD_clicked()
     clearInfoUsbDateSlot();
     ui->pidLineEdit->clear();
     ui->vidLineEdit->clear();
-    ui->serLineEdit->clear();
 
     /* 首先停止其他测试项目 */
     emit this->changeTestFlg(MOUS_TEST);
