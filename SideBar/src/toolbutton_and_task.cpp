@@ -1,185 +1,6 @@
 #include "widget.h"
 #include "ui_widget.h"
 
-void Widget::initButtons()
-{
-//    QList<QPushButton *> kdbButtons;
-
-
-    // 把按钮放在一个list里为了方便管理
-    {
-        buttons_Ram.append(ui->pushButton1);
-        buttons_Ram.append(ui->pushButton2);
-        buttons_Ram.append(ui->pushButton3);
-        buttons_Ram.append(ui->pushButton4);
-        buttons_Ram.append(ui->pushButton5);
-        buttons_Ram.append(ui->pushButton6);
-        buttons_Ram.append(ui->pushButton7);
-        buttons_Ram.append(ui->pushButton8);
-        buttons_Ram.append(ui->pushButton9);
-        buttons_Ram.append(ui->pushButton10);
-        buttons_Ram.append(ui->pushButton11);
-        buttons_Ram.append(ui->pushButton12);
-        buttons_Ram.append(ui->pushButton13);
-        buttons_Ram.append(ui->pushButton14);
-        buttons_Ram.append(ui->pushButton15);
-        buttons_Ram.append(ui->pushButton16);
-        buttons_Ram.append(ui->pushButton17);
-        buttons_Ram.append(ui->pushButton18);
-        buttons_Ram.append(ui->pushButton19);
-        buttons_Ram.append(ui->pushButton20);
-        buttons_Ram.append(ui->pushButton21);
-        buttons_Ram.append(ui->pushButton22);
-        buttons_Ram.append(ui->pushButton23);
-        buttons_Ram.append(ui->pushButton24);
-        buttons_Ram.append(ui->pushButton25);
-        buttons_Ram.append(ui->pushButton26);
-        buttons_Ram.append(ui->pushButton27);
-        buttons_Ram.append(ui->pushButton28);
-        buttons_Ram.append(ui->pushButton29);
-        buttons_Ram.append(ui->pushButton30);
-        buttons_Ram.append(ui->pushButton31);
-        buttons_Ram.append(ui->pushButton32);
-        buttons_Ram.append(ui->pushButton33);
-        buttons_Ram.append(ui->pushButton34);
-        buttons_Ram.append(ui->pushButton35);
-        buttons_Ram.append(ui->pushButton36);
-        buttons_Ram.append(ui->pushButton37);
-        buttons_Ram.append(ui->pushButton38);
-        buttons_Ram.append(ui->pushButton39);
-        buttons_Ram.append(ui->pushButton40);
-    }
-
-    {
-        buttons_Disk.append(ui->pushButton41);
-        buttons_Disk.append(ui->pushButton42);
-        buttons_Disk.append(ui->pushButton43);
-        buttons_Disk.append(ui->pushButton44);
-        buttons_Disk.append(ui->pushButton45);
-        buttons_Disk.append(ui->pushButton46);
-        buttons_Disk.append(ui->pushButton47);
-        buttons_Disk.append(ui->pushButton48);
-        buttons_Disk.append(ui->pushButton_79);
-        buttons_Disk.append(ui->pushButton_80);
-        buttons_Disk.append(ui->pushButton_81);
-        buttons_Disk.append(ui->pushButton_82);
-        buttons_Disk.append(ui->pushButton_83);
-        buttons_Disk.append(ui->pushButton_84);
-        buttons_Disk.append(ui->pushButton_85);
-        buttons_Disk.append(ui->pushButton_86);
-        buttons_Disk.append(ui->pushButton49);
-        buttons_Disk.append(ui->pushButton50);
-        buttons_Disk.append(ui->pushButton51);
-        buttons_Disk.append(ui->pushButton52);
-        buttons_Disk.append(ui->pushButton53);
-        buttons_Disk.append(ui->pushButton54);
-        buttons_Disk.append(ui->pushButton55);
-        buttons_Disk.append(ui->pushButton56);
-        buttons_Disk.append(ui->pushButton_95);
-        buttons_Disk.append(ui->pushButton_96);
-        buttons_Disk.append(ui->pushButton_97);
-        buttons_Disk.append(ui->pushButton_98);
-        buttons_Disk.append(ui->pushButton_99);
-        buttons_Disk.append(ui->pushButton_100);
-        buttons_Disk.append(ui->pushButton_101);
-        buttons_Disk.append(ui->pushButton_102);
-        buttons_Disk.append(ui->pushButton_41);
-        buttons_Disk.append(ui->pushButton_42);
-        buttons_Disk.append(ui->pushButton_43);
-        buttons_Disk.append(ui->pushButton_44);
-        buttons_Disk.append(ui->pushButton_45);
-        buttons_Disk.append(ui->pushButton_46);
-        buttons_Disk.append(ui->pushButton_47);
-        buttons_Disk.append(ui->pushButton_48);
-        buttons_Disk.append(ui->pushButton_71);
-        buttons_Disk.append(ui->pushButton_72);
-        buttons_Disk.append(ui->pushButton_73);
-        buttons_Disk.append(ui->pushButton_74);
-        buttons_Disk.append(ui->pushButton_75);
-        buttons_Disk.append(ui->pushButton_76);
-        buttons_Disk.append(ui->pushButton_77);
-        buttons_Disk.append(ui->pushButton_78);
-    }
-    buttons.append(ui->toolButton_disk);
-    buttons.append(ui->toolButton_kbd);
-    buttons.append(ui->toolButton_kbdlite);
-    buttons.append(ui->toolButton_mouse);
-    buttons.append(ui->toolButton_net);
-    buttons.append(ui->toolButton_pic);
-    buttons.append(ui->toolButton_ram);
-    buttons.append(ui->toolButton_uart);
-
-    /* 5个勾选框，分别对应于五个测试项 */
-    checkBoxs.append(ui->checkBox1);
-    checkBoxs.append(ui->checkBox2);
-    checkBoxs.append(ui->checkBox3);
-    checkBoxs.append(ui->checkBox4);
-    checkBoxs.append(ui->checkBox5);
-    foreach (QCheckBox *c, checkBoxs)
-    {
-        connect(c, SIGNAL(stateChanged(int)), this, SLOT(checkBox_stateChanged(int)));    /* 连接信号signal */
-    }
-
-    ui_RightButtons.append(ui->circleButton);
-    ui_RightButtons.append(ui->checkLogButton);
-    ui_RightButtons.append(ui->deleteLogButton);
-
-    /* 左边功能按键 */
-    foreach (QToolButton *b, buttons)
-    {
-        connect(b, SIGNAL(clicked()), this, SLOT(changeButtonStatus()));    /* 连接信号signal */
-    }
-
-    /* 右边的PushButton */
-    foreach (QPushButton *a, ui_RightButtons)
-    {
-        connect(a, SIGNAL(clicked()), this, SLOT(changePushButtonStatus()));    /* 连接信号signal */
-    }
-
-    ui->toolButton_ram->setProperty("first", "true"); // 第一个按钮上面的边框不要.
-}
-
-void Widget::changePushButtonStatus()
-{
-    /* 首先将所有的Button颜色正常化 */
-    foreach (QToolButton *b, buttons)
-    {
-        b->setProperty("current", "false");
-        b->setStyleSheet(""); // 刷新按钮的样式
-    }
-    foreach (QPushButton *a, ui_RightButtons)
-    {
-        a->setProperty("current", "false");
-        a->setStyleSheet(""); // 刷新按钮的样式
-    }
-
-    /* 将信号发送者的颜色变色 */
-    QPushButton *sources = qobject_cast<QPushButton *>(sender());
-    sources->setProperty("current", "true");
-    sources->setStyleSheet("");
-}
-
-void Widget::changeButtonStatus()
-{
-    // 用按钮的current属性来控制被按下按钮的外观.
-    // 当按钮被按下时, 设置其current属性为true,
-    // 其他按钮的current属性为false, 为了更新按钮的外观.
-    foreach (QToolButton *b, buttons)
-    {
-        b->setProperty("current", "false");
-        b->setStyleSheet(""); // 刷新按钮的样式
-    }
-    foreach (QPushButton *a, ui_RightButtons)
-    {
-        a->setProperty("current", "false");
-        a->setStyleSheet(""); // 刷新按钮的样式
-    }
-
-    QToolButton *source = qobject_cast<QToolButton *>(sender());
-    source->setProperty("current", "true");
-    source->setStyleSheet("");
-}
-
 void Widget::toolButton_Ram_clicked()
 {
 
@@ -208,6 +29,13 @@ void Widget::ram_test()
     int i = 0;
 
     ui->testWidget->setCurrentIndex(0);
+    foreach (QToolButton *b, buttons)
+    {
+        b->setProperty("current", "false");
+        b->setStyleSheet(""); // 刷新按钮的样式
+    }
+    ui->toolButton_ram->setProperty("current", "true");
+    ui->toolButton_ram->setStyleSheet("");
 
     foreach (QPushButton *b, buttons_Ram)
     {
@@ -355,6 +183,13 @@ void Widget::disk_test()
     QFile::remove("1.txt");
 
     ui->testWidget->setCurrentIndex(1);
+    foreach (QToolButton *b, buttons)
+    {
+        b->setProperty("current", "false");
+        b->setStyleSheet(""); // 刷新按钮的样式
+    }
+    ui->toolButton_disk->setProperty("current", "true");
+    ui->toolButton_disk->setStyleSheet("");
 
     foreach (QPushButton *b, buttons_Disk)
     {
@@ -666,6 +501,13 @@ void Widget::toolButton_Pic_clicked()
 void Widget::toggle_Picture()
 {
     ui->testWidget->setCurrentIndex(2);
+    foreach (QToolButton *b, buttons)
+    {
+        b->setProperty("current", "false");
+        b->setStyleSheet(""); // 刷新按钮的样式
+    }
+    ui->toolButton_pic->setProperty("current", "true");
+    ui->toolButton_pic->setStyleSheet("");
 
     ui->label_4->show();
     if( ui->testWidget->currentIndex() == 2 )
@@ -725,120 +567,164 @@ void Widget::toolButton_Net_clicked()
         c->hide();
     }
 
-    emit this->changeTestFlg(NET_TEST);
-}
-void Widget::net_test()
-{
-    QString ip = "127.0.0.1";
-    int exitCode;
-
-    ui->testWidget->setCurrentIndex(3);
-
     ui->net_textEdit1->clear();
     ui->net_textEdit2->clear();
     ui->net_textEdit2_2->clear();
     ui->net_textEdit2_3->clear();
     ui->net_textEdit2_4->clear();
     ui->net_textEdit2_5->clear();
+    emit this->changeTestFlg(NET_TEST);
+}
+void Widget::net_test()
+{
+    int exitCode;
+
+    ui->testWidget->setCurrentIndex(3);
+    foreach (QToolButton *b, buttons)
+    {
+        b->setProperty("current", "false");
+        b->setStyleSheet(""); // 刷新按钮的样式
+    }
+    ui->toolButton_net->setProperty("current", "true");
+    ui->toolButton_net->setStyleSheet("");
+
+    if( strIPList.isEmpty() )
+    {
+        strIPList << "127.0.0.1";
+        ui->netIPlabel->setText("测试网卡");
+    }
 
     //对每个Ip执行ping命令检测其是否在线
-    qDebug() << "ping " + ip << endl;
-    #ifdef Q_OS_WIN
-        QString strArg = "ping " + ip + " -n 1 -i 2";
-        exitCode = QProcess::execute(strArg);
+    qDebug() << "ping " << endl;
 
-{
-#if 0
-        QString strArg = "netsh interface ip set address \"本地连接";
-        QString strArg1 = " %1\" static 192.168.0.10 255.255.255.0 192.168.0.1";
-        QString strArg2 = "netsh interface ip set address \"本地连接 \" static 192.168.0.10 255.255.255.0 192.168.0.1";
-        QString strArg3;
-        //QString strArg = "ping " + ip + " -n 1 -i 2";
-        exitCode = QProcess::execute(strArg2);
-        if( 0 == exitCode )
-            cnt++;
+    foreach (QString ipStr, strIPList) {
 
-        for( int i = 0; i < 30; ++i )
+        if( ipStr.left(1) == "1192" )
         {
-            strArg3 = strArg + strArg1.arg(i);
-            exitCode = QProcess::execute(strArg3);
-            //qDebug() << strArg3;
+            ui->netIPlabel->setText("主板网卡IP: " + ipStr.remove(0, 1));
+        }
+        else if( ipStr.left(3) == "127" )
+        {
+
+        }
+        else
+        {
+            ui->netIPlabel->setText("网卡板IP: "   + ipStr.remove(0, 1));
+        }
+
+        #ifdef Q_OS_WIN
+            QString strArg = "ping " + ipStr + " -n 1 -i 2";
+            exitCode = QProcess::execute(strArg);
+
+    {
+    #if 0
+            QString strArg = "netsh interface ip set address \"本地连接";
+            QString strArg1 = " %1\" static 192.168.0.10 255.255.255.0 192.168.0.1";
+            QString strArg2 = "netsh interface ip set address \"本地连接 \" static 192.168.0.10 255.255.255.0 192.168.0.1";
+            QString strArg3;
+            //QString strArg = "ping " + ip + " -n 1 -i 2";
+            exitCode = QProcess::execute(strArg2);
             if( 0 == exitCode )
                 cnt++;
-        }
 
-        strArg = "ping " + ip + " -n 1 -i 2";
-        exitCode = QProcess::execute(strArg);
-#endif
-    }
-    #else
-        //其他平台(Linux或Mac)
-        exitCode = QProcess::execute("ping",  QStringList() << "-c 1" << "-t 2" << ip);
+            for( int i = 0; i < 30; ++i )
+            {
+                strArg3 = strArg + strArg1.arg(i);
+                exitCode = QProcess::execute(strArg3);
+                //qDebug() << strArg3;
+                if( 0 == exitCode )
+                    cnt++;
+            }
+
+            strArg = "ping " + ip + " -n 1 -i 2";
+            exitCode = QProcess::execute(strArg);
     #endif
+        }
+        #else
+            //其他平台(Linux或Mac)
+            exitCode = QProcess::execute("ping",  QStringList() << "-c 1" << "-t 2" << ipStr);
+        #endif
 
-    /* strArg.arg("~~~~"), 可进行修改 */
-    sleep(300);
+        /* strArg.arg("~~~~"), 可进行修改 */
 
-    if(0 == exitCode)
-    {
-        //it's alive
-        ui->net_textEdit1->setText("接收网卡数据：字节=32 时间<1ms TTL=64");
-
-        if( ui->testWidget->currentIndex() == 3 )
+        if(0 == exitCode)
         {
-            sleep(600);
-            ui->net_textEdit2->setText("接收网卡数据：字节=32 时间<1ms TTL=64");
+            sleep(300);
+            //it's alive
+            ui->net_textEdit1->setText("接收网卡数据：字节=32 时间<1ms TTL=64");
+
+            if( ui->testWidget->currentIndex() == 3 )
+            {
+                sleep(600);
+                ui->net_textEdit2->setText("接收网卡数据：字节=32 时间<1ms TTL=64");
+            }
+            else
+            {
+                return;
+            }
+
+            if( ui->testWidget->currentIndex() == 3 )
+            {
+                sleep(600);
+                ui->net_textEdit2_2->setText("接收网卡数据：字节=32 时间<1ms TTL=64");
+            }
+            else
+            {
+                return;
+            }
+
+            if( ui->testWidget->currentIndex() == 3 )
+            {
+                sleep(600);
+                ui->net_textEdit2_3->setText("接收网卡数据：字节=32 时间<1ms TTL=64");
+            }
+            else
+            {
+                return;
+            }
+
+            if( ui->testWidget->currentIndex() == 3 )
+            {
+                sleep(600);
+                ui->net_textEdit2_4->setText("接收网卡数据：字节=32 时间<1ms TTL=64");
+            }
+            else
+            {
+                return;
+            }
+
+            if( ui->testWidget->currentIndex() == 3 )
+            {
+                sleep(600);
+                ui->net_textEdit2_5->setText("接收网卡数据：字节=32 时间<1ms TTL=64");
+            }
+            else
+            {
+                return;
+            }
         }
         else
         {
-            return;
-        }
+            ui->net_textEdit1->setText("请求超时");
+            sleep(1000);
 
-        if( ui->testWidget->currentIndex() == 3 )
-        {
-            sleep(600);
-            ui->net_textEdit2_2->setText("接收网卡数据：字节=32 时间<1ms TTL=64");
+            fault_Cnt += 1;
+            /* 将要写入log文件中的字符串 */
+            inputFault.append(dateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss ")
+                              + ipStr + tr("网卡测试失败！"));
+            /* 将之显示到log TextEdit */
+            ui->textEdit_4->append(dateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss ")
+                                  + ipStr + tr("网卡测试失败！"));
         }
-        else
-        {
-            return;
-        }
+        sleep(300);
 
-        if( ui->testWidget->currentIndex() == 3 )
-        {
-            sleep(600);
-            ui->net_textEdit2_3->setText("接收网卡数据：字节=32 时间<1ms TTL=64");
-        }
-        else
-        {
-            return;
-        }
-
-        if( ui->testWidget->currentIndex() == 3 )
-        {
-            sleep(600);
-            ui->net_textEdit2_4->setText("接收网卡数据：字节=32 时间<1ms TTL=64");
-        }
-        else
-        {
-            return;
-        }
-
-        if( ui->testWidget->currentIndex() == 3 )
-        {
-            sleep(600);
-            ui->net_textEdit2_5->setText("接收网卡数据：字节=32 时间<1ms TTL=64");
-        }
-        else
-        {
-            return;
-        }
+        ui->net_textEdit1->clear();
+        ui->net_textEdit2->clear();
+        ui->net_textEdit2_2->clear();
+        ui->net_textEdit2_3->clear();
+        ui->net_textEdit2_4->clear();
+        ui->net_textEdit2_5->clear();
     }
-    else
-    {
-        ui->net_textEdit1->setText("请求超时");
-    }
-    sleep(300);
 }
 
 
@@ -874,6 +760,13 @@ void Widget::uart_test()
     QByteArray ch = strText.toLatin1();
 
     ui->testWidget->setCurrentIndex(4);
+    foreach (QToolButton *b, buttons)
+    {
+        b->setProperty("current", "false");
+        b->setStyleSheet(""); // 刷新按钮的样式
+    }
+    ui->toolButton_uart->setProperty("current", "true");
+    ui->toolButton_uart->setStyleSheet("");
 
     foreach ( QSerialPortInfo info, infos )
     {
@@ -897,10 +790,10 @@ void Widget::uart_test()
 
                 /* 将要写入log文件中的字符串 */
                 inputFault.append(dateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss ")
-                                  + tr("串口发送数据测试失败！"));
+                                  + info.portName() + tr("串口发送数据测试失败！"));
                 /* 将之显示到log TextEdit */
                 ui->textEdit_4->append(dateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss ")
-                                       + tr("串口发送数据测试失败！"));
+                                      + info.portName() + tr("串口发送数据测试失败！"));
                 return;
             }
             else
@@ -929,10 +822,10 @@ void Widget::uart_test()
 
                 /* 将要写入log文件中的字符串 */
                 inputFault.append(dateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss ")
-                                       + tr("串口接收数据测试失败！"));
+                                  + info.portName() + tr("串口接收数据测试失败！"));
                 /* 将之显示到log TextEdit */
                 ui->textEdit_4->append(dateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss ")
-                                       + tr("串口接收数据测试失败！"));
+                                       + info.portName() + tr("串口接收数据测试失败！"));
             }
         }
         else
@@ -948,10 +841,10 @@ void Widget::uart_test()
                 fault_Cnt += 1;
                 /* 将要写入log文件中的字符串 */
                 inputFault.append(dateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss ")
-                                  + tr("串口发送数据测试失败！"));
+                                  + info.portName() + tr("串口发送数据测试失败！"));
                 /* 将之显示到log TextEdit */
                 ui->textEdit_4->append(dateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss ")
-                                       + tr("串口发送数据测试失败！"));
+                                       + info.portName() + tr("串口发送数据测试失败！"));
                 return;
             }
             else
@@ -979,10 +872,10 @@ void Widget::uart_test()
                 fault_Cnt += 1;
                 /* 将要写入log文件中的字符串 */
                 inputFault.append(dateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss ")
-                                       + tr("串口接收数据测试失败！"));
+                                  + info.portName() + tr("串口接收数据测试失败！"));
                 /* 将之显示到log TextEdit */
                 ui->textEdit_4->append(dateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss ")
-                                       + tr("串口接收数据测试失败！"));
+                                       + info.portName() + tr("串口接收数据测试失败！"));
             }
         }
         else
@@ -998,10 +891,10 @@ void Widget::uart_test()
                 fault_Cnt += 1;
                 /* 将要写入log文件中的字符串 */
                 inputFault.append(dateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss ")
-                                  + tr("串口发送数据测试失败！"));
+                                  + info.portName() + tr("串口发送数据测试失败！"));
                 /* 将之显示到log TextEdit */
                 ui->textEdit_4->append(dateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss ")
-                                       + tr("串口发送数据测试失败！"));
+                                       + info.portName() + tr("串口发送数据测试失败！"));
                 return;
             }
             else
@@ -1025,13 +918,14 @@ void Widget::uart_test()
             {
                 ui->textEdit_9->setText("接收数据失败");
 
+                /* 发生错误,记错 */
                 fault_Cnt += 1;
                 /* 将要写入log文件中的字符串 */
                 inputFault.append(dateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss ")
-                                       + tr("串口接收数据测试失败！"));
+                                 + info.portName() + tr("串口接收数据测试失败！"));
                 /* 将之显示到log TextEdit */
                 ui->textEdit_4->append(dateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss ")
-                                       + tr("串口接收数据测试失败！"));
+                                       + info.portName() + tr("串口接收数据测试失败！"));
             }
         }
         else
@@ -1046,16 +940,36 @@ void Widget::uart_test()
 void Widget::toolButton_Mouse_clicked()
 {
     myThread::circTest_isOk = false;
+    foreach (QCheckBox *c, checkBoxs)
+    {
+        c->hide();
+    }
 
     ui->testWidget->setCurrentIndex(6);
 
-    emit this->changeTestFlg(MOUS_TEST);
+    emit this->changeTestFlg(MOUSE_TEST);
+}
+void Widget::mouse_test()
+{
+    /* 实际测试: event进入时间很慢,所以在需要实时得到鼠标坐标的时候并不适用,解决办法就是加快进入事件的次数,例入: */
+    QMouseEvent event(QEvent::User, pos, Qt::NoButton, Qt::NoButton, 0);
+    QTime t;
+    t.start();
+    while(t.elapsed() < 8000)
+    {
+        QApplication::sendEvent(this, &event);
+        QCoreApplication::processEvents();
+    }
 }
 
 void Widget::toolButton_BLANKBD_clicked()
 {
     struct hid_device_info *devs;
     myThread::circTest_isOk = false;
+    foreach (QCheckBox *c, checkBoxs)
+    {
+        c->hide();
+    }
 
     /* 清除测试界面已有文字 */
     keyCodeClearSlot();
@@ -1111,14 +1025,115 @@ void Widget::toolButton_KBD_clicked()
     emit this->changeTestFlg(MOUS_TEST);
 }
 
-void Widget::circleButton_clicked()
+/* 键盘类中循坏测试的处理代码 */
+void Widget::circleKBDTest(int signal)
 {
-    myThread::circTest_isOk = true;
+    if( signal == 0 )
+    {
+        ui->testWidget->setCurrentIndex(8);
+        foreach (QToolButton *b, buttons)
+        {
+            b->setProperty("current", "false");
+            b->setStyleSheet(""); // 刷新按钮的样式
+        }
+        ui->toolButton_kbd->setProperty("current", "true");
+        ui->toolButton_kbd->setStyleSheet("");
+
+        if( ui->testWidget->currentIndex() == 8 )
+        {
+            sleep(1000);
+        }
+        else
+            return;
+        if( ui->testWidget->currentIndex() == 8 )
+        {
+            sleep(1000);
+        }
+        else
+            return;
+        if( ui->testWidget->currentIndex() == 8 )
+        {
+            sleep(1000);
+        }
+        else
+            return;
+        if( ui->testWidget->currentIndex() == 8 )
+        {
+            sleep(1000);
+        }
+        else
+            return;
+    }
+    else if( signal == 1 )
+    {    
+        if( kbdLite_isOk == true )
+        {
+            ui->testWidget->setCurrentIndex(5);
+            foreach (QToolButton *b, buttons)
+            {
+                b->setProperty("current", "false");
+                b->setStyleSheet(""); // 刷新按钮的样式
+            }
+            ui->toolButton_kbdlite->setProperty("current", "true");
+            ui->toolButton_kbdlite->setStyleSheet("");
+        }
+    }
+    else if( signal == 2 )
+    {
+        ui->testWidget->setCurrentIndex(6);
+        foreach (QToolButton *b, buttons)
+        {
+            b->setProperty("current", "false");
+            b->setStyleSheet(""); // 刷新按钮的样式
+        }
+        ui->toolButton_mouse->setProperty("current", "true");
+        ui->toolButton_mouse->setStyleSheet("");
+
+        /* 实际测试: event进入时间很慢,所以在需要实时得到鼠标坐标的时候并不适用,解决办法就是加快进入事件的次数,例入: */
+        mouse_test();
+    }
+}
+
+void Widget::selectTestItem_clicked()
+{
+    myThread::circTest_isOk = false;
 
     foreach (QCheckBox *c, checkBoxs)
     {
         c->show();
-        c->setChecked(true);
+        c->setEnabled(true);
+        c->setChecked(false);
+    }
+
+    if ( kbdLite_isOk == false )
+        ui->checkBox7->hide();
+
+    /* 停止循环测试 */
+    ui->label_3->setText(tr("请在左侧勾选循环测试的测试项"));
+    ui->testWidget->setCurrentIndex(9);
+    emit this->changeTestFlg(MOUS_TEST);
+}
+void Widget::circleButton_clicked()
+{
+    int i = 0;
+
+    foreach (QCheckBox *c, checkBoxs)
+    {
+        if( c->isChecked() == true )
+            i += 1;
+    }
+    if( i == 0 )
+    {
+        QMessageBox::warning(this, "warning Message", "请选择循环测试项或直接进行单项测试");
+        ui->selectTestItemBtm->click();
+        return;
+    }
+
+    myThread::circTest_isOk = true;
+
+    foreach (QCheckBox *c, checkBoxs)
+    {
+        c->setEnabled(false);
     }
 
     emit this->changeTestFlg(CIRC_TEST);
@@ -1138,33 +1153,5 @@ void Widget::checkBox_stateChanged(int state)
             myThread::checkBox_TestFlg[i] = false;
         }
         i++;
-    }
-}
-
-void Widget::checkFaultLog_Slot()
-{
-    myThread::circTest_isOk = false;
-    foreach (QCheckBox *c, checkBoxs)
-    {
-        c->hide();
-    }
-
-    ui->testWidget->setCurrentIndex(7);
-
-    /* 停止其他测试 */
-    emit this->changeTestFlg(MOUS_TEST);
-}
-
-void Widget::deleteFaultLog_Slot()
-{
-    QMessageBox::StandardButton rb = QMessageBox::warning(this, "warning Message",
-                                                          tr("确认是否删除测试报告?"),
-                                                          QMessageBox::Yes | QMessageBox::No,
-                                                          QMessageBox::No);
-    if(rb == QMessageBox::Yes)
-    {
-        ui->textEdit_4->clear();
-        faultfile->resize(0);
-        inputFault.clear();
     }
 }

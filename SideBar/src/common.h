@@ -11,5 +11,6 @@
 #define MOUS_TEST   (int)7
 #define CIRC_TEST   (int)8
 #define BLANK_TEST  (int)9
+#define MOUSE_TEST  (int)10
 
 #endif // COMMON_H

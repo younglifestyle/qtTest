@@ -23,7 +23,10 @@ SOURCES += main.cpp \
     glwidget.cpp \
     window.cpp \
     toolbutton_and_task.cpp \
-    keyMouseMotion.cpp
+    keyMouseMotion.cpp \
+    keyboardlitetest.cpp \
+    uirightbutton.cpp \
+    initbutton.cpp
 
 HEADERS  += \
     widget.h \
@@ -38,5 +41,6 @@ FORMS    += \
 
 LIBS += -L$$_PRO_FILE_PWD_/ \
             -lhidapi
+
 RESOURCES += \
     resources.qrc

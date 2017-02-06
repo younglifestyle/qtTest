@@ -31,6 +31,9 @@ Widget::Widget(QWidget *parent) :
 //    window->moveToThread(thread);     /* 将该类移动到线程中，但是该类在主线程调用的函数还是会运行在主线程中 */
 
     faultfile = new QFile("faultLog.txt");
+    cfgfile   = new QFile("config");
+
+    readCfgText();
 
     pixmap = new QPixmap[3];
     image = new QImage[3];
@@ -49,11 +52,15 @@ Widget::Widget(QWidget *parent) :
 
     /* 隐藏掉Tab */
     ui->testWidget->tabBar()->hide();
+    ui->comboBox->hide();
+    ui->label_3->setText(tr("欢迎进入XXX测试,请选择单项测试或循环测试"));
+    ui->testWidget->setCurrentIndex(9);
 
-    /* 先暂时在程序启动时显示第一个测试界面，后面可以直接hide testUI */
-    ui->testWidget->setCurrentIndex(0);
+    ui->mousePos->setText(QString("(%1, %2)").arg(pos.x()).arg(pos.y()));
+//    /* 先暂时在程序启动时显示第一个测试界面，后面可以直接hide testUI */
+//    ui->testWidget->setCurrentIndex(0);
 
-    /* 去掉TextEdit的背景色，使其透明化 */
+    /* 去掉TextEdit的背景色，使其透明化 设置StyleSheet可以改变字体颜色以及背景色,可直接在UI界面上进行设置 */
 //    ui->textEdit->setStyleSheet("background-color:transparent;");
 //    ui->net_textEdit1->setStyleSheet("color: rgb(234, 234, 234); background-color: rgb(25, 105, 154); font: bold; font-size : 24px");
 
@@ -94,6 +101,7 @@ Widget::Widget(QWidget *parent) :
     connect(ui->toolButton_kbdlite, SIGNAL(clicked()), this,  SLOT(toolButton_BLANKBD_clicked()));
     connect(ui->toolButton_kbd,     SIGNAL(clicked()), this,  SLOT(toolButton_KBD_clicked()));
 
+    connect(ui->selectTestItemBtm,  SIGNAL(clicked()), this,  SLOT(selectTestItem_clicked()));
     connect(ui->circleButton,       SIGNAL(clicked()), this,  SLOT(circleButton_clicked()));
 
     connect(ui->getPushButton,      SIGNAL(clicked()), this,  SLOT(getUsbPidVidSlot()));
@@ -106,11 +114,13 @@ Widget::Widget(QWidget *parent) :
     connect(this, SIGNAL(changefaultDate(QString)), this, SLOT(changeLabelfault(QString)));
     connect(this, SIGNAL(changeCircleDate(QString)),this, SLOT(changeLableCircleDate(QString)));
 
-    connect(thread, SIGNAL(ramSignal()),  this, SLOT(ram_test()),       Qt::BlockingQueuedConnection);
-    connect(thread, SIGNAL(diskSignal()), this, SLOT(disk_test()),      Qt::BlockingQueuedConnection);
-    connect(thread, SIGNAL(picSignal()),  this, SLOT(toggle_Picture()), Qt::BlockingQueuedConnection);
-    connect(thread, SIGNAL(netSignal()),  this, SLOT(net_test()),       Qt::BlockingQueuedConnection);
-    connect(thread, SIGNAL(uartSignal()), this, SLOT(uart_test()),      Qt::BlockingQueuedConnection);
+    connect(thread, SIGNAL(ramSignal()),      this, SLOT(ram_test()),         Qt::BlockingQueuedConnection);
+    connect(thread, SIGNAL(diskSignal()),     this, SLOT(disk_test()),        Qt::BlockingQueuedConnection);
+    connect(thread, SIGNAL(picSignal()),      this, SLOT(toggle_Picture()),   Qt::BlockingQueuedConnection);
+    connect(thread, SIGNAL(netSignal()),      this, SLOT(net_test()),         Qt::BlockingQueuedConnection);
+    connect(thread, SIGNAL(uartSignal()),     this, SLOT(uart_test()),        Qt::BlockingQueuedConnection);
+    connect(thread, SIGNAL(boardSignal(int)), this, SLOT(circleKBDTest(int)), Qt::BlockingQueuedConnection);
+    connect(thread, SIGNAL(mouseSignal()),    this, SLOT(mouse_test()),       Qt::BlockingQueuedConnection);
 
     connect(ui->checkLogButton, SIGNAL(clicked()), this, SLOT(checkFaultLog_Slot()));
     connect(ui->deleteLogButton,SIGNAL(clicked()), this, SLOT(deleteFaultLog_Slot()));
@@ -165,55 +175,6 @@ Widget::~Widget()
     delete ui;
 }
 
-void Widget::changePrintButton()
-{
-    ui->PrintScreenPushButton->setStyleSheet("background-color:rgb(112, 243, 255)");
-    sleep(60);
-    ui->PrintScreenPushButton->setStyleSheet("");
-}
-
-void Widget::setfaultLogTextEdit()
-{
-    QString lineStr;
-
-    /* 错误记录 */
-    ui->textEdit_4->setStyleSheet("background-color:transparent;");
-
-    ui->textEdit_4->setFontPointSize(20);
-    ui->textEdit_4->setTextColor(QColor("white"));
-
-//    qDebug() << faultfile->exists();
-
-    /* 不存在即创建 */
-    if ( !faultfile->exists() )
-    {
-        faultfile->open( QIODevice::WriteOnly );
-        faultfile->close();
-    }
-
-    if ( faultfile->size() != 0 )
-    {
-        bool ok = faultfile->open( QIODevice::ReadWrite );
-
-        qDebug() << ok;
-
-        if ( ok )
-        {
-            QTextStream in(faultfile);
-            while ( !in.atEnd() )
-            {
-                lineStr = in.readLine();
-                if ( lineStr.left(10) == dateTime.currentDateTime().toString("yyyy-MM-dd") )
-                {
-                    ui->textEdit_4->append( lineStr );
-                }
-            }
-
-            faultfile->close();
-        }
-    }
-}
-
 void Widget::check_DeviceExist()
 {
     struct hid_device_info *devs, *cur_dev;
@@ -230,10 +191,13 @@ void Widget::check_DeviceExist()
         {
             devInfo = *cur_dev;
             kbdLite_isOk = true;
+            break;
         }
         else
         {
             kbdLite_isOk = false;
+            qDebug() << kbdLite_isOk;
+            break;
         }
 
         cur_dev = cur_dev->next;
@@ -245,21 +209,6 @@ void Widget::check_DeviceExist()
     {
         myThread::handle = hid_open(0x04B4, 0x0201, NULL);
     }
-}
-
-void Widget::changeLabelTime(const QString &Tim)
-{
-    ui->timeCnt->setText(Tim);
-}
-
-void Widget::changeLabelfault(const QString &date)
-{
-    ui->errorCnt->setText(date);
-}
-
-void Widget::changeLableCircleDate(const QString &date)
-{
-    ui->circleCnt->setText(date);
 }
 
 void Widget::onTimeout()
@@ -328,91 +277,6 @@ void Widget::onTimeout()
     //ui->timeCnt->setText();
 }
 
-void Widget::getUsbPidVidSlot()
-{
-    unsigned short VID = devInfo.vendor_id;
-    unsigned short PID = devInfo.product_id;
-
-    ui->vidLineEdit->setText("0x0" + QString::number(VID, 16));
-    ui->pidLineEdit->setText("0x0" + QString::number(PID, 16));
-}
-
-void Widget::receive0x0AData_setText_Slot(unsigned char *keyBuf)
-{
-    ui->k1LineEdit->setText("0x" + QString::number(keyBuf[1],16));
-    ui->k2LineEdit->setText("0x" + QString::number(keyBuf[2],16));
-    ui->k3LineEdit->setText("0x" + QString::number(keyBuf[3],16));
-    ui->k4LineEdit->setText("0x" + QString::number(keyBuf[4],16));
-    ui->k5LineEdit->setText("0x" + QString::number(keyBuf[5],16));
-    ui->k6LineEdit->setText("0x" + QString::number(keyBuf[6],16));
-    ui->k7LineEdit->setText("0x" + QString::number(keyBuf[7],16));
-
-    ui->k8LineEdit->setText("0x" + QString::number(keyBuf[8],16));
-    ui->k9LineEdit->setText("0x" + QString::number(keyBuf[9],16));
-    ui->k10LineEdit->setText("0x" + QString::number(keyBuf[10],16));
-    ui->k11LineEdit->setText("0x" + QString::number(keyBuf[11],16));
-    ui->k12LineEdit->setText("0x" + QString::number(keyBuf[12],16));
-    ui->k13LineEdit->setText("0x" + QString::number(keyBuf[13],16));
-    ui->k14LineEdit->setText("0x" + QString::number(keyBuf[14],16));
-    ui->k15LineEdit->setText("0x" + QString::number(keyBuf[15],16));
-
-    ui->k16LineEdit->setText("0x" + QString::number(keyBuf[16],16));
-}
-
-void Widget::sendUsbCommand_0x0AFlg_Slot()
-{
-    if( myThread::KeyQuery_0A == false )
-    {
-        myThread::KeyQuery_0A = true;
-    }
-}
-
-void Widget::clearInfoUsbDateSlot()
-{
-    ui->k1LineEdit->clear();
-    ui->k2LineEdit->clear();
-    ui->k3LineEdit->clear();
-    ui->k4LineEdit->clear();
-    ui->k5LineEdit->clear();
-    ui->k6LineEdit->clear();
-    ui->k7LineEdit->clear();
-    ui->k8LineEdit->clear();
-    ui->k9LineEdit->clear();
-    ui->k10LineEdit->clear();
-    ui->k11LineEdit->clear();
-    ui->k12LineEdit->clear();
-    ui->k13LineEdit->clear();
-    ui->k14LineEdit->clear();
-    ui->k15LineEdit->clear();
-    ui->k16LineEdit->clear();
-    return;
-}
-
-void Widget::keyCodeClearSlot()
-{
-    ui->keyTextEdit->clear();
-}
-
-void Widget::query_SetKeyTextSlot(unsigned char *KeyBuf)
-{
-    if( KeyBuf == NULL )
-    {
-        QMessageBox::warning(this, "warning Message", "USB设备未插入或被占用，通信出错");
-        kbdLite_isOk = false;
-        ui->testWidget->setCurrentIndex(0);
-        emit this->changeTestFlg(55);
-        ui->toolButton_ram->setProperty("current", "true");
-        ui->toolButton_ram->setStyleSheet("");     // 刷新按钮的样式
-        ui->toolButton_kbdlite->setProperty("current", "false");
-        ui->toolButton_kbdlite->setStyleSheet(""); // 刷新按钮的样式
-        return;
-    }
-    else
-    {
-        ui->keyTextEdit->append("0x" + QString::number(KeyBuf[1], 16));
-    }
-}
-
 void Widget::sleep(unsigned int msec)
 {
     QElapsedTimer t;
@@ -426,7 +290,7 @@ void Widget::sleep(unsigned int msec)
     QTime dieTime = QTime::currentTime().addMSecs(msec);
 
     while( QTime::currentTime() < dieTime )
-        QCoreApplication::processEvents(QEventLoop::AllEvents, 20);
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
 #endif
 }
 }

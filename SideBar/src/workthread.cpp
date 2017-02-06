@@ -2,11 +2,12 @@
 
 #include <QDebug>
 
-hid_device * myThread::handle = NULL;
+hid_device * myThread::handle = Q_NULLPTR;
 bool myThread::KeyQuery_0A = false;
 bool myThread::circTest_isOk = false;
 bool myThread::uart_Flg = true;
-int myThread::checkBox_TestFlg[5] = {0};
+bool myThread::blankKBD = true;
+int myThread::checkBox_TestFlg[8] = {0};
 int myThread::circle_Cnt = 0;
 
 myThread::myThread(QObject *parent) :
@@ -88,11 +89,81 @@ void myThread::run()
                     }
                 }
 
+                if ( circTest_isOk )
+                {
+                    if ( checkBox_TestFlg[5] == true )
+                    {
+                        emit this->boardSignal(0);
+                    }
+                }
+
+                if ( circTest_isOk )
+                {
+                    if ( checkBox_TestFlg[6] == true )
+                    {
+                        emit this->boardSignal(1);
+                        QElapsedTimer t;
+                        t.start();
+
+                        while(t.elapsed() < 5000)
+                        {
+                            memset(buf2, 0, sizeof(buf2));
+                            memset(buf1, 0, sizeof(buf1));
+
+                            res = hid_read_timeout(myThread::handle, buf2, 8, 60);
+                            if ( res == -1 )
+                            {
+                                qDebug()<<"read is failed!";
+                                emit sendKeyDataSignal(NULL);
+                                continue;
+                            }
+                            if( res == 0 )
+                            {
+                        //                    continue;
+                            }
+                            else
+                            {
+                                emit sendKeyDataSignal(buf2);
+                            }
+
+                            if( KeyQuery_0A )
+                            {
+                                /* 按下一次查询，只查询一次 */
+                                KeyQuery_0A = false;
+
+                                /* 获取状态查询码 */
+                                buf1[0] = 0x0;
+                                buf1[1] = 0x0A;
+
+                                hid_write(this->handle, buf1, 2);
+
+                                hid_read(this->handle, buf1,    8);
+                                hid_read(this->handle, buf1+8,  8);
+                                hid_read(this->handle, buf1+16, 1);
+
+                                emit sendKeyQueryDataSignal(buf1);
+                            }
+                        }
+                    }
+                }
+
+                if ( circTest_isOk )
+                {
+                    if ( checkBox_TestFlg[7] == true )
+                    {
+                        emit this->boardSignal(2);
+                    }
+                }
+
                 circle_Cnt += 1;
                 break;
 
             case MOUS_TEST:
-                /* 不需要线程协助 */
+                /* 不需要线程协助, 为了保证实时显示鼠标坐标,但不破坏代码中的MOUS_TEST的使用,新加入了MOUSE_TEST */
+                break;
+
+            case MOUSE_TEST:
+                emit this->mouseSignal();
                 break;
 
             case BLANK_TEST:
@@ -108,7 +179,7 @@ void myThread::run()
                 }
                 if( res == 0 )
                 {
-//                    continue;
+            //                    continue;
                 }
                 else
                 {
@@ -132,7 +203,6 @@ void myThread::run()
 
                     emit sendKeyQueryDataSignal(buf1);
                 }
-
                 break;
 
             default:

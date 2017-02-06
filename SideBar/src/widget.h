@@ -37,6 +37,7 @@ class Widget : public QWidget
 {
     Q_OBJECT
 
+
 public:
     explicit Widget(QWidget *parent = 0);
     ~Widget();
@@ -45,6 +46,7 @@ public:
     void initSeialPort();
     void check_DeviceExist();
     void setfaultLogTextEdit();
+    void readCfgText();
     void resizeEvent(QResizeEvent *event);
 
     QList<QSerialPortInfo> infos;   // 保存计算机上所有的串口信息
@@ -84,6 +86,9 @@ private slots:
     void toolButton_BLANKBD_clicked();
     void toolButton_KBD_clicked();
     void circleButton_clicked();
+    void selectTestItem_clicked();
+    void circleKBDTest(int signal);
+
     void checkFaultLog_Slot();
     void deleteFaultLog_Slot();
 
@@ -103,6 +108,7 @@ private slots:
     void disk_test();
     void net_test();
     void uart_test();
+    void mouse_test();
 
     void query_SetKeyTextSlot(unsigned char *KeyBuf);
 
@@ -112,14 +118,14 @@ private slots:
 
 protected:
     //鼠标拖动事件
-    void mouseMoveEvent(QMouseEvent *e);
+//    void mouseMoveEvent(QMouseEvent *e);
     //鼠标按下事件
     void mousePressEvent(QMouseEvent *e);
     //鼠标松开事件
     void mouseReleaseEvent(QMouseEvent *);
     //按键按下事件
     void keyPressEvent(QKeyEvent *k);
-
+    //按键松开事件
     void keyReleaseEvent(QKeyEvent *e);
 
     bool event(QEvent *event);
@@ -136,8 +142,10 @@ private:
     QList<QPushButton *> ui_RightButtons;
     QList<QCheckBox *>   checkBoxs;
     QStringList inputFault;
+    QStringList strIPList;
 
     QFile *faultfile;
+    QFile *cfgfile;
     int fault_Cnt;
 
     QImage *image;

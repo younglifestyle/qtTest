@@ -1,22 +1,30 @@
 #include "widget.h"
 #include "ui_widget.h"
 
+/* 解决print按键QT不响应的办法 */
+void Widget::changePrintButton()
+{
+    ui->PrintScreenPushButton->setStyleSheet("background-color:rgb(112, 243, 255)");
+    sleep(60);
+    ui->PrintScreenPushButton->setStyleSheet("");
+}
+
 void Widget::mousePressEvent(QMouseEvent *e)
 {
     if( e->button() == Qt::LeftButton )
     {
         ui->leftButton->setProperty("current", "true");
-        ui->leftButton->setStyleSheet("");
+        ui->leftButton->setStyleSheet("background-color:rgb(0, 255, 0)");
     }
     else if( e->button() == Qt::MidButton )
     {
         ui->midButton->setProperty("current", "true");
-        ui->midButton->setStyleSheet("");
+        ui->midButton->setStyleSheet("background-color:rgb(0, 255, 0)");
     }
     else if( e->button() == Qt::RightButton )
     {
         ui->rightButton->setProperty("current", "true");
-        ui->rightButton->setStyleSheet("");
+        ui->rightButton->setStyleSheet("background-color:rgb(0, 255, 0)");
     }
 }
 
@@ -39,10 +47,12 @@ void Widget::mouseReleaseEvent(QMouseEvent *e)
     }
 }
 
-void Widget::mouseMoveEvent(QMouseEvent *e)
-{
-    ui->mousePos->setText(QString("(%1, %2)").arg(e->globalX()).arg(e->globalY()));
-}
+//void Widget::mouseMoveEvent(QMouseEvent *e)
+//{
+////    QPoint pos = e->Pos();
+//    ui->mousePos->setText(QString("(%1, %2)").arg(e->globalX()).arg(e->globalY()));
+
+//}
 
 void Widget::keyPressEvent(QKeyEvent *k)
 {
@@ -475,12 +485,13 @@ bool Widget::event(QEvent *event)
      * 不能在程序一开始时就调用 ui->mousePos->setText(QString("(%1, %2)").arg(pos.x()).arg(pos.y()));
      * 猜测：因为UI界面未建立，此时传送字符串将引发内存泄露的危害，造成程序卡死。
     */
-    if( i > 20 )
+    if( i > 10 )
     {
         if( pos != pos1 && ui->testWidget->currentIndex() == 6 )
         {
             ui->mousePos->setText(QString("(%1, %2)").arg(pos.x()).arg(pos.y()));
             pos = pos1;
+//            qDebug() << QString("(%1, %2)").arg(pos.x()).arg(pos.y());
         }
     }
 

@@ -55,6 +55,7 @@
 #include <QDebug>
 #include <QLayout>
 
+
 class GLWidget;
 
 class Window : public QWidget

@@ -63,7 +63,8 @@ Window::Window(QWidget *parent) :
     QHBoxLayout *mainLayout = new QHBoxLayout;
 //    parent->layout()   /* 返回父界面的layout */
     QColor clearColor;
-    clearColor.setHsv(203, 213, 131);
+//    clearColor.setHsv(19, 84, 136);
+    clearColor.setRgb(19, 84, 136);
 
     glWidgets = new GLWidget;
     glWidgets->setClearColor(clearColor);

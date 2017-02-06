@@ -6,6 +6,9 @@ INPUT(
 ./temp\window.o
 ./temp\toolbutton_and_task.o
 ./temp\keyMouseMotion.o
+./temp\keyboardlitetest.o
+./temp\uirightbutton.o
+./temp\initbutton.o
 ./temp\qrc_resources.o
 ./temp\moc_widget.o
 ./temp\moc_workthread.o
