@@ -6,8 +6,8 @@ void Widget::getUsbPidVidSlot()
     unsigned short VID = devInfo.vendor_id;
     unsigned short PID = devInfo.product_id;
 
-    ui->vidLineEdit->setText("0x0" + QString::number(VID, 16));
-    ui->pidLineEdit->setText("0x0" + QString::number(PID, 16));
+    ui->vidLineEdit->setText("0x" + QString::number(VID, 16));
+    ui->pidLineEdit->setText("0x00" + QString::number(PID, 16));
 }
 
 void Widget::receive0x0AData_setText_Slot(unsigned char *keyBuf)
@@ -33,6 +33,53 @@ void Widget::receive0x0AData_setText_Slot(unsigned char *keyBuf)
     ui->k15LineEdit->setText("0x" + QString::number(keyBuf[15],16));
 
     ui->k16LineEdit->setText("0x" + QString::number(keyBuf[16],16));
+
+    /* 根据实际产品更改自锁键盘 */
+    if(keyBuf[2]==0x11)
+    {
+        ui->k2PushButton->setStyleSheet("background-color:rgb(0, 255, 0)");
+    }
+    else
+    {
+        ui->k2PushButton->setStyleSheet("");
+    }
+
+    if(keyBuf[3]==0x12)
+    {
+        ui->k3PushButton->setStyleSheet("background-color:rgb(0, 255, 0)");
+    }
+    else
+    {
+        ui->k3PushButton->setStyleSheet("");
+    }
+
+    if(keyBuf[4]==0x13)
+    {
+        ui->k4PushButton->setStyleSheet("background-color:rgb(0, 255, 0)");
+    }
+    else
+    {
+        ui->k4PushButton->setStyleSheet("");
+    }
+
+    if(keyBuf[7]==0x16)
+    {
+        ui->k7PushButton->setStyleSheet("background-color:rgb(0, 255, 0)");
+    }
+    else
+    {
+        ui->k7PushButton->setStyleSheet("");
+    }
+
+    if(keyBuf[8]==0x17)
+    {
+        ui->k8PushButton->setStyleSheet("background-color:rgb(0, 255, 0)");
+    }
+    else
+    {
+        ui->k8PushButton->setStyleSheet("");
+    }
+
 }
 
 void Widget::sendUsbCommand_0x0AFlg_Slot()

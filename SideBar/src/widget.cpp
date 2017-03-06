@@ -69,9 +69,6 @@ Widget::Widget(QWidget *parent) :
     ui->rightButton->setEnabled(false);
     ui->midButton->setEnabled(false);
 
-    /* 键盘测试，设置按钮不可用可以让焦点保持在界面，消除BUG */
-    ui->EscPushButton->setEnabled(false);
-
     ui->testWidget->setMouseTracking(true);
 
     /* 不让界面开始时跳那么一下 */
@@ -87,6 +84,10 @@ Widget::Widget(QWidget *parent) :
     /* 检查USB设备、空白热键 */
     check_DeviceExist();
 
+    /* 隐藏右边的全选键 */
+    ui->allSelectButtom->hide();
+
+    /* 隐藏循环测试勾选框 */
     foreach (QCheckBox *c, checkBoxs)
     {
         c->hide();
@@ -101,6 +102,7 @@ Widget::Widget(QWidget *parent) :
     connect(ui->toolButton_kbdlite, SIGNAL(clicked()), this,  SLOT(toolButton_BLANKBD_clicked()));
     connect(ui->toolButton_kbd,     SIGNAL(clicked()), this,  SLOT(toolButton_KBD_clicked()));
 
+    connect(ui->allSelectButtom,    SIGNAL(clicked()), this,  SLOT(allSelect_clicked()));
     connect(ui->selectTestItemBtm,  SIGNAL(clicked()), this,  SLOT(selectTestItem_clicked()));
     connect(ui->circleButton,       SIGNAL(clicked()), this,  SLOT(circleButton_clicked()));
 
@@ -182,23 +184,22 @@ void Widget::check_DeviceExist()
 
     kbdLite_isOk = false;
 
-    devs = hid_enumerate(0x0, 0x0);
+    devs = hid_enumerate(0, 0);
     cur_dev = devs;
 
     while (cur_dev)
     {
-        if( cur_dev->vendor_id == 0x04B4 && cur_dev->product_id == 0x0201 )
+        if( cur_dev->vendor_id == 0x04B4 /*0x1FC9 0x04B4*/ && cur_dev->product_id == 0x0201/*0x0090 0x0201*/ )
         {
             devInfo = *cur_dev;
             kbdLite_isOk = true;
+//            qDebug() <<"+++++" << kbdLite_isOk;
             break;
         }
         else
         {
             kbdLite_isOk = false;
-            qDebug() << kbdLite_isOk;
-            break;
-        }
+       }
 
         cur_dev = cur_dev->next;
     }
@@ -207,7 +208,14 @@ void Widget::check_DeviceExist()
 
     if( kbdLite_isOk )
     {
-        myThread::handle = hid_open(0x04B4, 0x0201, NULL);
+        if( ! (myThread::handle = hid_open(0x04B4, 0x0201, /*0x04B4, 0x0201,*/NULL)) )
+        {
+            qDebug() <<"failed";
+        }
+        else
+        {
+            qDebug() <<"success";
+        }
     }
 }
 

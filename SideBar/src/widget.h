@@ -59,6 +59,7 @@ public:
     struct hid_device_info devInfo;
     static QPoint pos;
 
+    bool flg;
     bool circTest_isOk;
     bool kbdLite_isOk;
 
@@ -87,6 +88,7 @@ private slots:
     void toolButton_KBD_clicked();
     void circleButton_clicked();
     void selectTestItem_clicked();
+    void allSelect_clicked();
     void circleKBDTest(int signal);
 
     void checkFaultLog_Slot();

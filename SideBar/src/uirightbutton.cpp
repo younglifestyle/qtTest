@@ -107,15 +107,21 @@ void Widget::setfaultLogTextEdit()
     }
 }
 
+/* 查看错误报告 */
 void Widget::checkFaultLog_Slot()
 {
     myThread::circTest_isOk = false;
     foreach (QCheckBox *c, checkBoxs)
     {
-        c->hide();
+        if( ! c->isHidden() )
+            c->hide();
     }
 
     ui->testWidget->setCurrentIndex(7);
+
+    /* 全选按键若没有隐藏，则隐藏 */
+    if ( !ui->allSelectButtom->isHidden() )
+        ui->allSelectButtom->hide();
 
     /* 停止其他测试 */
     emit this->changeTestFlg(MOUS_TEST);
@@ -123,6 +129,16 @@ void Widget::checkFaultLog_Slot()
 
 void Widget::deleteFaultLog_Slot()
 {
+    /* 全选按键若没有隐藏，则隐藏 */
+    if ( !ui->allSelectButtom->isHidden() )
+        ui->allSelectButtom->hide();
+
+    foreach (QCheckBox *c, checkBoxs)
+    {
+        if( ! c->isHidden() )
+            c->hide();
+    }
+
     QMessageBox::StandardButton rb = QMessageBox::warning(this, "warning Message",
                                                           tr("确认是否删除测试报告?"),
                                                           QMessageBox::Yes | QMessageBox::No,

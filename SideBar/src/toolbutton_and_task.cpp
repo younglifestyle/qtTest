@@ -19,8 +19,12 @@ void Widget::toolButton_Ram_clicked()
     ui->testWidget->setCurrentIndex(0);
     foreach (QCheckBox *c, checkBoxs)
     {
-        c->hide();
+        if( ! c->isHidden() )
+            c->hide();
     }
+
+    if( !ui->allSelectButtom->isHidden() )
+        ui->allSelectButtom->hide();
 
     emit this->changeTestFlg(RAM_TEST);
 }
@@ -159,8 +163,12 @@ void Widget::toolButton_Disk_clicked()
     ui->testWidget->setCurrentIndex(1);
     foreach (QCheckBox *c, checkBoxs)
     {
-        c->hide();
+        if( ! c->isHidden() )
+            c->hide();
     }
+
+    if( !ui->allSelectButtom->isHidden() )
+        ui->allSelectButtom->hide();
 
     emit this->changeTestFlg(DISK_TEST);
 
@@ -493,8 +501,12 @@ void Widget::toolButton_Pic_clicked()
     ui->testWidget->setCurrentIndex(2);
     foreach (QCheckBox *c, checkBoxs)
     {
-        c->hide();
+        if( ! c->isHidden() )
+            c->hide();
     }
+
+    if ( !ui->allSelectButtom->isHidden() )
+        ui->allSelectButtom->hide();
 
     emit this->changeTestFlg(PIC_TEST);
 }
@@ -564,8 +576,12 @@ void Widget::toolButton_Net_clicked()
     ui->testWidget->setCurrentIndex(3);
     foreach (QCheckBox *c, checkBoxs)
     {
-        c->hide();
+        if( ! c->isHidden() )
+            c->hide();
     }
+
+    if ( !ui->allSelectButtom->isHidden() )
+        ui->allSelectButtom->hide();
 
     ui->net_textEdit1->clear();
     ui->net_textEdit2->clear();
@@ -749,8 +765,12 @@ void Widget::toolButton_Uart_clicked()
     ui->testWidget->setCurrentIndex(4);
     foreach (QCheckBox *c, checkBoxs)
     {
-        c->hide();
+        if( ! c->isHidden() )
+            c->hide();
     }
+
+    if ( !ui->allSelectButtom->isHidden() )
+        ui->allSelectButtom->hide();
 
     emit this->changeTestFlg(UART_TEST);
 }
@@ -945,6 +965,9 @@ void Widget::toolButton_Mouse_clicked()
         c->hide();
     }
 
+    if ( !ui->allSelectButtom->isHidden() )
+        ui->allSelectButtom->hide();
+
     ui->testWidget->setCurrentIndex(6);
 
     emit this->changeTestFlg(MOUSE_TEST);
@@ -955,7 +978,7 @@ void Widget::mouse_test()
     QMouseEvent event(QEvent::User, pos, Qt::NoButton, Qt::NoButton, 0);
     QTime t;
     t.start();
-    while(t.elapsed() < 8000)
+    while(t.elapsed() < 2000)
     {
         QApplication::sendEvent(this, &event);
         QCoreApplication::processEvents();
@@ -968,8 +991,12 @@ void Widget::toolButton_BLANKBD_clicked()
     myThread::circTest_isOk = false;
     foreach (QCheckBox *c, checkBoxs)
     {
-        c->hide();
+        if( ! c->isHidden() )
+            c->hide();
     }
+
+    if ( !ui->allSelectButtom->isHidden() )
+        ui->allSelectButtom->hide();
 
     /* 清除测试界面已有文字 */
     keyCodeClearSlot();
@@ -987,7 +1014,7 @@ void Widget::toolButton_BLANKBD_clicked()
     }
     else
     {
-        devs = hid_enumerate(0x04B4, 0x0201);
+        devs = hid_enumerate(0x1FC9, 0x0090 /*0x04B4, 0x0201*/);
         if( devs )
         {
             devInfo = *devs;
@@ -999,7 +1026,9 @@ void Widget::toolButton_BLANKBD_clicked()
         }
         hid_free_enumeration(devs);
 
-        if( !(myThread::handle = hid_open(0x04B4, 0x0201, NULL)) )
+
+
+        if( !( myThread::handle = hid_open( 0x1FC9, 0x0090, /*0x04B4, 0x0201,*/NULL ) ) )
         {
             QMessageBox::warning(this, "warning Message", "USB设备未插入或被占用");
             return;
@@ -1016,8 +1045,12 @@ void Widget::toolButton_KBD_clicked()
     myThread::circTest_isOk = false;
     foreach (QCheckBox *c, checkBoxs)
     {
-        c->hide();
+        if( ! c->isHidden() )
+            c->hide();
     }
+
+    if ( !ui->allSelectButtom->isHidden() )
+        ui->allSelectButtom->hide();
 
     ui->testWidget->setCurrentIndex(8);
 
@@ -1094,6 +1127,33 @@ void Widget::circleKBDTest(int signal)
     }
 }
 
+/* 右侧的全选键 */
+void Widget::allSelect_clicked()
+{
+    if ( flg )
+    {
+        qDebug() << flg;
+        flg = false;
+        ui->allSelectButtom->setText( tr("全不选") );
+
+        foreach (QCheckBox *c, checkBoxs)
+        {
+            c->setChecked(true);
+        }
+    }
+    else
+    {
+        qDebug() << "++";
+        flg = true;
+        ui->allSelectButtom->setText( tr("全选") );
+
+        foreach (QCheckBox *c, checkBoxs)
+        {
+            c->setChecked(false);
+        }
+    }
+
+}
 void Widget::selectTestItem_clicked()
 {
     myThread::circTest_isOk = false;
@@ -1107,6 +1167,11 @@ void Widget::selectTestItem_clicked()
 
     if ( kbdLite_isOk == false )
         ui->checkBox7->hide();
+
+    /* 全选键 */
+    ui->allSelectButtom->setText( tr("全选") );
+    flg = true;   /* 全选标志位 */
+    ui->allSelectButtom->show();
 
     /* 停止循环测试 */
     ui->label_3->setText(tr("请在左侧勾选循环测试的测试项"));
@@ -1128,6 +1193,10 @@ void Widget::circleButton_clicked()
         ui->selectTestItemBtm->click();
         return;
     }
+
+    /* 隐藏全选键 */
+    ui->allSelectButtom->hide();
+    flg = true;
 
     myThread::circTest_isOk = true;
 

@@ -110,6 +110,7 @@ void myThread::run()
                             memset(buf2, 0, sizeof(buf2));
                             memset(buf1, 0, sizeof(buf1));
 
+                            qDebug()<<"1++";
                             res = hid_read_timeout(myThread::handle, buf2, 8, 60);
                             if ( res == -1 )
                             {
@@ -123,23 +124,25 @@ void myThread::run()
                             }
                             else
                             {
+                                qDebug()<<"2++";
                                 emit sendKeyDataSignal(buf2);
                             }
 
+                            qDebug()<<"3++";
                             if( KeyQuery_0A )
                             {
                                 /* 按下一次查询，只查询一次 */
                                 KeyQuery_0A = false;
 
                                 /* 获取状态查询码 */
-                                buf1[0] = 0x0;
+                                buf1[0] = 0x00;
                                 buf1[1] = 0x0A;
 
                                 hid_write(this->handle, buf1, 2);
 
                                 hid_read(this->handle, buf1,    8);
                                 hid_read(this->handle, buf1+8,  8);
-                                hid_read(this->handle, buf1+16, 1);
+                                hid_read(this->handle, buf1+16, 8);
 
                                 emit sendKeyQueryDataSignal(buf1);
                             }
@@ -199,7 +202,7 @@ void myThread::run()
 
                     hid_read(this->handle, buf1,    8);
                     hid_read(this->handle, buf1+8,  8);
-                    hid_read(this->handle, buf1+16, 1);
+                    hid_read(this->handle, buf1+16, 8);
 
                     emit sendKeyQueryDataSignal(buf1);
                 }
